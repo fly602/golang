@@ -5,8 +5,9 @@ type DB interface {
 }
 
 func GetFromDB(db DB, key string) int {
-	if value, err := db.Get(key); err != nil {
-		return value
+	value, err := db.Get(key)
+	if err != nil {
+		return -1
 	}
-	return -1
+	return value
 }
