@@ -1,5 +1,13 @@
-mysql/data/
 */vendor/
-kafka/data/
 */*/vendor/
-elk/mydata/
+*/*/*/vendor/
+
+*/go.mod
+*/*/go.mod
+*/*/*/go.mod
+*/*/*/*/go.mod
+
+*/go.sum
+*/*/go.sum
+*/*/*/go.sum
+*/*/*/*/go.sum
