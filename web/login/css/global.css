@@ -1,0 +1,64 @@
+h1 {
+    color: tomato;
+    margin: 50px;
+}
+p {
+    color:black;
+}
+body {
+    background-color: #b0c4de; 
+    background-image: url("../img/Flying_Whale_by_Shu_Le.jpg");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: right top;
+    background-size: 10%;
+}
+a {
+    text-decoration: none;
+}
+a:link {
+    color: cyan;
+}
+a:visited {
+    color: blue;
+}
+a:hover {
+    color: red;
+}
+a:active {
+    color: yellow;
+}
+p {
+    text-indent: 50px;
+    margin: 25px;
+}
+
+ul {
+    list-style: square;
+}
+ol {
+    list-style: lower-roman;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table,th,td{
+    border: 2px solid red;
+    margin: 25px;
+    border-color: darkturquoise;
+    margin-top: 100px;
+    margin-left: 300px;
+}
+
+td {
+    height: 50px;
+    width: 120px;
+    text-align: right;
+    padding: 5px;
+}
+
+th {
+    background-color: blue;
+}

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>login</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="./css/global.css">
+    </head>
+    <script>
+        function onblur(){
+            document.getElementById("body").innerHTML="失去焦点，5s内刷新。。。"
+            setTimeout(location.reload(),5000)
+        }
+        function onfocus(){
+            alert("欢迎回来")
+            location.reload()
+        }
+        function onunload(){
+            alert("欢迎下次光临")
+        }
+    </script>
+    <body id="body">
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+        <h1>这个一个login 测试页面。</h1>
+        <a id="baidu-link" target="_top" href="https://www.baidu.com" accesskey="h">这是一个<b>link</b>，访问<del cite="https://www.fuleyi.com" datetime="">谷歌</del><ins>百度</ins>。alt+h 快捷进入</a>
+        <br>
+        <hr>
+        <p>Created by <abbr title="Fu Le yi">FLY</abbr> at 2022-08-14</p>
+        <a href="img/abc-123.jpg" download="img/abc-123.jpg"><img src="img/abc-123.jpg" width="102" height="76"></a>
+        <script src="" async defer></script>
+        <hr>
+        <p>使用meter 元素展示给定的数据范围：</p>
+        <meter value="2" min="0" max="10"></meter>
+        <p>标记下载进度：</p>
+        <progress value="22" max="100"></progress>
+        <hr>
+        <p>表单的使用</p>
+        <fieldset>
+            <legend>个人信息：</legend>
+        <form id="login-form" autocomplate="on" method="post" action="http://www.baidu.com">
+            账号：<input type="text" name="account" required autofocus="true" placeholder="fuleyi"><br>
+            密码：<input type="password" placeholder="abc" required name="passwd" autofocus="true" pattern="[A-Za-z]{3}" title="Three letter country code"><br>
+            头像：<input type="file" src="img/desktop.jpg" alt="Submit" name="image" width="48" height="48" multiple><br>
+            性别：
+            <label for="male">男</label>
+            <input type="radio" name="sex" id="male" checked><br>
+            <label for="female">女</label>
+            <input type="radio" name="sex" id="female"><br>
+            Email：<input type="email" name="email"><br>
+            所在地：<select id="area">
+                <option value="武汉">武汉</option>
+                <option value="十堰">十堰</option>
+                <option value="丹江口市" selected>丹江口市</option>
+                <option value="上海">上海</option>
+            </select><br>
+            婚否：<select name="marry">
+                <option value="是" selected>是</option>
+                <option value="否">否</option>
+            </select><br>
+
+            自我评价：<br>
+            <textarea rows="10" cols="30" form="login-form"
+             name="self-assessment" maxlength="200"  
+             placeholder="自我评价，200字以内......"
+            ></textarea> <br>
+            提交：<keygen name="security">
+            <input type="submit" value="提交"><br>
+        </form>
+    </fieldset>
+        <p>定义内联框架:</p>
+        <iframe src="login.html" sandbox="allow-forms">不支持ifname</iframe>
+        <br>
+        <figure contenteditable="true">
+            <img src="./img/Flying_Whale_by_Shu_Le.jpg" alt="aa" width="48" height="48" loading="lazy" crossorigin="use-credentials" ismap><br>
+            <figcaption>自由自在的鱼</figcaption>
+        </figure>
+        <fieldset>
+            <legend>音乐专区：</legend>
+            <audio controls autoplay loop preload="auto">
+                <source src="./audio/陈奕迅-《孤勇者》 mp3音乐免费下载.mp3" type="audio/mpeg">
+            </audio>
+        </fieldset>
+        <fieldset>
+            <legend>视频专区：</legend>
+            <video width="320" height="240" controls autoplay loop>
+                <source src="./video/dde-introduction.mp4" type="video/mp4">
+            </video>
+        </fieldset>
+        <fieldset>
+            <legend>下载专区：</legend>
+            孤勇者Mp3：<a target="_blank" href="./audio/陈奕迅-《孤勇者》 mp3音乐免费下载.mp3" download="./audio/陈奕迅-《孤勇者》 mp3音乐免费下载.mp3">下载</a>
+            <br>
+            孤勇者MV：<a href="./video/dde-introduction.mp4" download="./video/dde-introduction.mp4">下载</a>
+        </fieldset>
+        <hr>
+        <nav>
+            <a href="/html/">HTML</a>
+        </nav>
+        <fieldset>
+            <script>
+                function showDetails(drinks){
+                    var drinkType = drinks.getAttribute("data-drink-type")
+                    alert("The "+drinks.innerHTML + " is a "+ drinkType+".")
+                }
+            </script>
+            <legend onclick="">无序列表：</legend>
+            <ul>
+                <li onclick="showDetails(this)" data-drink-type="Coffee">Coffee</li>
+                <li onclick="showDetails(this)" data-drink-type="Tea">Tea</li>
+                <li onclick="showDetails(this)" data-drink-type="Milk">Milk</li>
+            </ul>
+            <ol start="100">
+                <li draggable="true" title="咖啡">Coffee</li>
+                <li dir="auto" title="茶">Tea</li>
+                <li style="color: violet;" title="牛奶">Milk</li>
+            </ol>
+            <dl>
+                <dt>Coffee</dt>
+                <dd>Black and hot</dd>
+                <dt>Milk</dt>
+                <dd>white cold drink</dd>
+            </dl>
+        </fieldset>
+
+        <fieldset>
+            <legend>表格：</legend>
+            <table>
+                <!-- <colgroup>
+                    <col span="1" style="background-color: springgreen;">
+                    <col style="background-color: crimson;">
+                </colgroup> -->
+                <caption>Monthly Savings</caption>
+                <tr>
+                    <th>Month</th>
+                    <th>Savings</th>
+                </tr>
+                <tr>
+                    <td>January</td>
+                    <td>100$</td>
+                </tr>
+                <tr>
+                    <td>Febrary</td>
+                    <td>80$</td>
+                </tr>
+            </table>
+        </fieldset>
+        <fieldset>
+            <legend>文档区域</legend>
+            <div style="background-color: cornsilk;">
+                <h3>这是一个在div中的<span style="color: red; background-color: black;">标题</span></h3>
+                <p>这是一个再div中的文本</p>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>文章：</legend>
+            <header>
+                <h1>Internet Explorer 9</h1>
+                <p><time pubdate datetime="2011-03-15"></time></p>
+            </header>
+            <p> Windows Internet Explorer 9(缩写为 IE9 )是在2011年3月14日21:00发布的</p>
+            <section>
+                <h1>WWF</h1>
+                <p>The World Wide Fund for Nature (WWF) is....</p>
+            </section>
+            <details>
+                <summary>Copyright 1999-2011.</summary>
+                <p> - by Refsnes Data. All Rights Reserved.</p>
+                <p>All content and graphics on this web site are the property of the company Refsnes Data.</p>
+                </details>
+            <footer>
+                <p>Posted by: Hege Refsnes</p>
+                <p><time pubdate datetime="2012-03-01"></time></p>
+            </footer>
+        </fieldset>
+
+        <fieldset>
+            <legend>js 专区</legend>
+            <script charset="utf-8">
+                var a = "你好世界！！！"
+                for (var i =0;i < 5;i++){
+                    document.writeln(a)
+                }
+            </script>
+            <br>
+            <embed type="image/jpg" src="./img/Colorful-Abstraction01.jpg" width="48" height="48">
+            <br>
+            <embed type="text/html" src="./login.html" width="1024">
+            <br>
+            <embed type="video/webm" src="./video/dde-introduction.mp4" >
+            <br>
+            <object data="./img/francesco-ungaro-1fzbUyzsHV8-unsplash.jpg" width="48" height="48"></object>
+        </fieldset>
+        <address>
+            Written by <a href="mailto:fuleyi@outlook.com">Fly</a>.<br>
+            Visit Us at:<br>
+            <a target="_blank" href="https://fuleyi.com">fuleyi.com</a>.<br>
+            Wuhan China.<br>
+        </address>
+    </body>
+</html>

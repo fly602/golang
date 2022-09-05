@@ -1,0 +1,6 @@
+proxy:
+  image: nginx
+  ports:
+    - 50001:80
+  volumes:
+    - ./html:/usr/share/nginx/html

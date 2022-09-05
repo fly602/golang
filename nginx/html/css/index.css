@@ -1,0 +1,47 @@
+h1 {
+    text-align: center;
+    color: brown;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.ui_container {
+    margin: auto;
+    margin-top: 40px;
+    width: 1000px;
+    display: flex;
+}
+
+.session_form {
+    margin:0 auto;
+    width:50%;
+    min-height:564px;
+    float: left;
+}
+
+.session_info {
+    background-image: url(../img/left-1-e6bd44245f3950a6f5787218eeeed90b.webp), url(../img/left-2-4f76bf713bc13c53d0973eda61dd1b55.webp);
+    background-repeat: no-repeat,no-repeat;
+    background-color: lightslategray;
+    background-position: left top,right bottom;
+}
+
+.session_info_head {
+    margin: auto;
+    height: 340px;
+    height: 96px;
+}
+
+.session_logo {
+    padding: 80px 80px 48px;
+    width: 340px;
+    height: 50px;
+    display: flex;
+}
+
+.session_info_h1 {
+    min-height: 1rem;
+}
+
+.session_info_h2 {
+    font-size: 1.714rem;
+}

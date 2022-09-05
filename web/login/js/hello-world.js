@@ -1,0 +1,1 @@
+document.write("js: hello world!!!")

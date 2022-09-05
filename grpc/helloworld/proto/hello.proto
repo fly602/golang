@@ -1,0 +1,23 @@
+syntax = "proto3";//指定proto版本
+package hello;//指定默认包名
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+
+//  指定golang 包名
+option go_package = "./hello";
+
+// 定义Hello 服务
+service hello{
+    rpc Sayhello(HelloRequest) returns (HelloResponse){}
+    rpc SayHelloNoResp(google.protobuf.Int32Value) returns (google.protobuf.Empty){}
+
+}
+
+// Hello请求结构体
+message HelloRequest{
+    string name = 1;
+}
+// Hello响应结构体
+message HelloResponse{
+    string message = 1;
+}

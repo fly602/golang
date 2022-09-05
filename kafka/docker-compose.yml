@@ -1,0 +1,162 @@
+version: '3'
+networks:
+  app:
+    driver: bridge
+
+services:
+  # 配置zookeeper 集群
+  zk1:
+    image: zookeeper:latest
+    ports:
+      - "21821:2182"
+      - "21811:2181"
+    container_name: zk1
+    networks:
+      - app
+    volumes:
+      - /home/uos/dde-go/src/go-community/kafka/data/zk1/data:/data
+      - /home/uos/dde-go/src/go-community/kafka/data/zk1/datalog:/datalog
+    environment:
+      - ZOO_MY_ID=1
+      - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+
+  zk2:
+    image: zookeeper:latest
+    ports:
+      - "21822:2182"
+      - "21812:2181"
+    container_name: zk2
+    networks:
+      - app
+    volumes:
+      - /home/uos/dde-go/src/go-community/kafka/data/zk2/data:/data
+      - /home/uos/dde-go/src/go-community/kafka/data/zk2/datalog:/datalog
+    environment:
+      - ZOO_MY_ID=2
+      - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+
+  zk3:
+    image: zookeeper:latest
+    ports:
+      - "21823:2182"
+      - "21813:2181"
+    container_name: zk3
+    networks:
+      - app
+    volumes:
+      - /home/uos/dde-go/src/go-community/kafka/data/zk3/data:/data
+      - /home/uos/dde-go/src/go-community/kafka/data/zk3/datalog:/datalog
+    environment:
+      - ZOO_MY_ID=3
+      - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+
+  # 配置kafka中间件
+  broker1:
+    image: bitnami/kafka:latest
+    container_name: broker1
+    ports:
+      - "9192:9092"
+    # 依赖zookeeper启动
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+    networks:
+      - app
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.191:9192
+    volumes:
+      - /home/uos/dde-go/src/go-community/kafka/data/broker1/kafka:/bitnami/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  broker2:
+    image: bitnami/kafka:latest
+    container_name: broker2
+    ports:
+      - "9292:9092"
+    # 依赖zookeeper启动
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+    networks:
+      - app
+    environment:
+      - KAFKA_BROKER_ID=2
+      - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.191:9292
+    volumes:
+      - /home/uos/dde-go/src/go-community/kafka/data/broker2/kafka:/bitnami/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  broker3:
+    image: bitnami/kafka:latest
+    container_name: broker3
+    ports:
+      - "9392:9092"
+    # 依赖zookeeper启动
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+    networks:
+      - app
+    environment:
+      - KAFKA_BROKER_ID=3
+      - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.191:9392
+    volumes:
+      - /home/uos/dde-go/src/go-community/kafka/data/broker3/kafka:/bitnami/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  broker4:
+    image: bitnami/kafka:latest
+    container_name: broker4
+    ports:
+      - "9492:9092"
+    # 依赖zookeeper启动
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+    networks:
+      - app
+    environment:
+      - KAFKA_BROKER_ID=4
+      - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.191:9492
+    volumes:
+      - /home/uos/dde-go/src/go-community/kafka/data/broker4/kafka:/bitnami/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  kafka-manager:
+    image: sheepkiller/kafka-manager:latest
+    container_name: kafka-manager
+    hostname: kafka-manager
+    ports: 
+      - "9010:9000"
+    links:
+      - broker1
+      - broker2
+      - broker3
+    external_links:
+      - zk1
+      - zk2
+      - zk3
+    environment:
+      - ZK_HOSTS=zk1:2181,zk2:2181,zk3:2181
+      - TZ=CST-8
+    networks:
+      - app
+
+    

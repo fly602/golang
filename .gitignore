@@ -1,0 +1,5 @@
+mysql/data/
+*/vendor/
+kafka/data/
+*/*/vendor/
+elk/mydata/
