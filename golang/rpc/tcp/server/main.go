@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go-community/rpc/tcp/server/goods"
+	"go-community/golang/rpc/tcp/server/goods"
 	"net/http"
 	"net/rpc"
 

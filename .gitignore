@@ -11,3 +11,5 @@
 */*/go.sum
 */*/*/go.sum
 */*/*/*/go.sum
+
+.vscode
