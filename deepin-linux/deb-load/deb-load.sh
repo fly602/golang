@@ -20,7 +20,7 @@
 ## 仓库地址,根据对应仓库修改
 ORIGIN=https://aptly.uniontech.com/pkg/kelvinu-sp2/release-candidate/a2x1LXNqcy1rd2luMjAyMi0wOS0xNSAxNzoyMDowNQ
 ## 包名，根据需要自行补充
-PKGNAMES=()
+PKGNAMES=(pipewire)
 #################################################################
 
 ######################### 以下配置保持不变 #########################
@@ -32,6 +32,8 @@ WGET=wget
 OPTIONS='--mirror -r -np -R "*index.html*" -nd -e robots=off'
 DIR_LOCAL="debs-all"
 DIR_INSTALL="debs-install"
+##  调试包依赖包的匹配字段
+DEL_MATCH='*-dev* *-dbgsym* *-doc*'
 #################################################################
 
 echo "仓库源地址: "$ORIGIN
@@ -69,7 +71,7 @@ fi
 ##  将需要的包压缩
 cp *.deb ../$DIR_INSTALL
 cd ../$DIR_INSTALL
-ls *-dev* *-dbgsym* *-doc* |xargs rm -rf
+ls $DEL_MATCH |xargs rm -rf
 cd ..
 tar -cvzf deb-install.tar.gz $DIR_INSTALL
 #
