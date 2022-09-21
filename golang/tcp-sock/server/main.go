@@ -43,7 +43,7 @@ func process(conn net.Conn) {
 		var buf [1024]byte
 		n, err := reader.Read(buf[:])
 		if err != nil {
-			if err.Error() == io.EOF.Error() {
+			if err == io.EOF {
 				return
 			}
 			log.Fatalln("Tcp server read err,", err)

@@ -7,6 +7,11 @@ import (
 	"net"
 )
 
+const (
+	TCP_OPTION_NODELAY = true
+	TCP_OPTION_LINGER  = 0
+)
+
 var letters = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func randBytes(n int) []byte {
@@ -15,6 +20,15 @@ func randBytes(n int) []byte {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return b
+}
+
+func tcpSetOPtion(conn net.Conn) {
+	tcpConn, ok := conn.(*net.TCPConn)
+	if !ok {
+		return
+	}
+	tcpConn.SetNoDelay(TCP_OPTION_NODELAY)
+	tcpConn.SetLinger(TCP_OPTION_LINGER)
 }
 
 func sendManual(conn net.Conn) {
@@ -43,6 +57,6 @@ func main() {
 	if err != nil {
 		log.Fatalln("Client dail err,", err)
 	}
-	go sendManual(conn)
-	select {}
+	tcpSetOPtion(conn)
+	sendManual(conn)
 }
