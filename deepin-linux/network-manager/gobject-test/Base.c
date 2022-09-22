@@ -51,7 +51,7 @@ static void test_base_class_init(TESTBaseClass *pBaseClass)
 	pBaseClass->basehello  = test_base_hello_signal;
 	basesignals[HELLO_BASE_SIGNAL] = g_signal_new ("basehello",
                       G_TYPE_FROM_CLASS (pBaseClass),
-                      G_SIGNAL_RUN_LAST,
+                      G_SIGNAL_RUN_FIRST,
 					  G_STRUCT_OFFSET (TESTBaseClass, basehello),
                       NULL,
                       NULL,

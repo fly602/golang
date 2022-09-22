@@ -35,7 +35,6 @@ struct _TESTBaseClass
 };
 
 
-//GType   test_base_get_type(void);
 void send_basehello_signal(TESTBase *pBase,int i);
 
 

@@ -31,8 +31,6 @@ struct _TESTChild1Class
 };
 
 
-//GType   test_base_get_type(void);
 void send_hello_signal(TESTChild1 *pBase,int i);
-//void test_hello_callback_connect(TESTChild1 *pBase,int i);
 
 #endif

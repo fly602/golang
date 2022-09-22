@@ -1,7 +1,8 @@
 #include "Child1.h"
 
 
-G_DEFINE_TYPE(TESTChild1,test_child1,TEST_TYPE_BASE);
+//G_DEFINE_TYPE(TESTChild1,test_child1,TEST_TYPE_BASE);
+G_DEFINE_TYPE_EXTENDED(TESTChild1,test_child1,TEST_TYPE_BASE,0,{printf("G_DEFINE_TYPE_EXTENDED called");});
 
 typedef enum
 {
@@ -56,7 +57,7 @@ static void test_child1_class_init(TESTChild1Class *pBaseClass)
 
 	signals[HELLO_SIGNAL] = g_signal_new ("hello",
                       G_TYPE_FROM_CLASS (pBaseClass),
-                      G_SIGNAL_RUN_LAST,
+                      G_SIGNAL_RUN_FIRST|G_SIGNAL_RUN_LAST,
                       G_STRUCT_OFFSET (TESTChild1Class, helloCb),
                       NULL,
                       NULL,
