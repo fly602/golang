@@ -1,6 +1,6 @@
 package main
 
-import "go-community/program/luoxuansqu"
+import "go-community/algorithm/program/luoxuansqu"
 
 func main() {
 

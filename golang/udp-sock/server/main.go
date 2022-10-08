@@ -6,6 +6,13 @@ import (
 )
 
 func main() {
+
+	var Info map[string]string = make(map[string]string)
+
+	Info["name"] = "aaa"
+	Info["age"] = "18"
+	Info["weight"] = "100kg"
+
 	udpAddr, err := net.ResolveUDPAddr("udp", ":30001")
 	if err != nil {
 		fmt.Println("udp addr err:", err)
@@ -29,4 +36,5 @@ func main() {
 		// 一旦服务器接收效率底下，查看udp缓冲器大小
 		//time.Sleep(time.Second)
 	}
+	fmt.Println(Info)
 }
