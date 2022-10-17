@@ -39,7 +39,7 @@ DEL_MATCH='*-dev* *-dbgsym* *-doc*'
 echo "仓库源地址: "$ORIGIN
 echo "仓库路径："${PKGNAMES[*]}
 
-if [ ! $ORIGIN];then
+if [ ! $ORIGIN ];then
 echo "脚本仓库源地址为空，请配置脚本仓库源地址。。。"
 fi
 
@@ -52,7 +52,7 @@ mkdir $DIR_INSTALL -v
 fi
 
 cd $DIR_LOCAL
-if [ ! $PKGNAMES];then
+if [ ! $PKGNAMES ];then
     ##  如果数组为空， 默认下载所有deb包
     $WGET $OPTIONS   $ORIGIN/
 else
@@ -60,9 +60,9 @@ else
     do
         ## 检测是否是lib开头
         if [ ${pkg:0:3} = "lib" ];then
-            pkg_path=$BASE_PATH/${pkg:0:4}/$pkg
+            pkg_path=$BASE_PATH/${pkg:0:4}/$pkg/
         else
-            pkg_path=$BASE_PATH/${pkg:0:1}/$pkg
+            pkg_path=$BASE_PATH/${pkg:0:1}/$pkg/
         fi
         $WGET $OPTIONS   $ORIGIN/$pkg_path    
     done
