@@ -7,6 +7,6 @@ type Product struct {
 	ProductPrice       string         `json:"product_price"`
 	ProductDescription string         `json:"product_description"`
 	ProductImage       []ProductImage `gorm:"ForeignKey:ImageProductID" json:"product_image"`
-	ProductSize        []ProductSize  `grom:"ForeignKey:SizeProductID" json:"product_size"`
-	ProductSeo         ProductSeo     `grom:"ForeignKey:SeoProductID" json:"product_seo"`
+	ProductSize        []ProductSize  `gorm:"ForeignKey:SizeProductID" json:"product_size"`
+	ProductSeo         ProductSeo     `gorm:"ForeignKey:SeoProductID" json:"product_seo"`
 }
