@@ -1,0 +1,170 @@
+To completely disable this security protection add
+        set auto-load safe-path /
+line to your configuration file "/root/.gdbinit".
+For more information about this security protection see the
+"Auto-loading safe path" section in the GDB manual.  E.g., run from the shell:
+        info "(gdb)Auto-loading safe path"
+(gdb) c
+Continuing.
+^C
+Thread 1 "NetworkManager" received signal SIGINT, Interrupt.
+0x00007f962eeaf495 in __GI___pthread_timedjoin_ex (threadid=140282750297856, thread_return=thread_return@entry=0x0, abstime=abstime@entry=0x0, 
+    block=block@entry=true) at pthread_join_common.c:89
+89      pthread_join_common.c: 没有那个文件或目录.
+(gdb) bt
+#0  0x00007f962eeaf495 in __GI___pthread_timedjoin_ex (threadid=140282750297856, thread_return=thread_return@entry=0x0, abstime=abstime@entry=0x0, 
+    block=block@entry=true) at pthread_join_common.c:89
+#1  0x00007f962eeaf26c in __pthread_join (threadid=<optimized out>, thread_return=thread_return@entry=0x0) at pthread_join.c:24
+#2  0x00007f962ef17236 in Curl_thread_join (hnd=0x562143202a70) at curl_threads.c:93
+#3  0x00007f962ef19f6c in Curl_resolver_wait_resolv (conn=conn@entry=0x56214333e880, entry=entry@entry=0x0) at asyn-thread.c:504
+#4  0x00007f962ef1a089 in Curl_resolver_kill (conn=conn@entry=0x56214333e880) at asyn-thread.c:476
+#5  0x00007f962ef01415 in multi_done (data=data@entry=0x56214333f2b0, status=CURLE_OK, premature=premature@entry=true) at multi.c:537
+#6  0x00007f962ef038d4 in curl_multi_remove_handle (multi=0x56214314ddd0, data=0x56214333f2b0) at multi.c:718
+#7  0x000056214172b2af in cb_data_complete (cb_data=0x7f96240144e0, state=NM_CONNECTIVITY_LIMITED, log_message=0x562141780940 "timeout")
+    at src/nm-connectivity.c:192
+#8  0x000056214172b6f5 in _timeout_cb (user_data=<error reading variable: value has been optimized out>) at src/nm-connectivity.c:533
+#9  0x00007f962f0eb923 in g_timeout_dispatch (source=0x56214319fe90, callback=<optimized out>, user_data=<optimized out>) at ../../../glib/gmain.c:4667
+#10 0x00007f962f0eae98 in g_main_dispatch (context=0x5621430f45c0) at ../../../glib/gmain.c:3182
+#11 g_main_context_dispatch (context=context@entry=0x5621430f45c0) at ../../../glib/gmain.c:3847
+#12 0x00007f962f0eb288 in g_main_context_iterate (context=0x5621430f45c0, block=block@entry=1, dispatch=dispatch@entry=1, self=<optimized out>)
+    at ../../../glib/gmain.c:3920
+#13 0x00007f962f0eb582 in g_main_loop_run (loop=0x5621430ce8b0) at ../../../glib/gmain.c:4116
+#14 0x00005621415cb153 in main (argc=<optimized out>, argv=<optimized out>) at src/main.c:442
+(gdb) thread apply all bt
+
+Thread 5 (Thread 0x7f9617fff700 (LWP 25707)):
+#0  0x00007f962edd3959 in __GI___poll (fds=fds@entry=0x7f9617ffcbc8, nfds=nfds@entry=1, timeout=5000, 
+    timeout@entry=<error reading variable: That operation is not available on integers of more than 8 bytes.>) at ../sysdeps/unix/sysv/linux/poll.c:29
+#1  0x00007f962e878207 in send_dg (ansp2_malloced=<optimized out>, resplen2=<optimized out>, anssizp2=<optimized out>, ansp2=<optimized out>, 
+    anscp=<optimized out>, gotsomewhere=<synthetic pointer>, v_circuit=<synthetic pointer>, ns=<optimized out>, terrno=0x7f9617ffcb88, 
+    anssizp=0x7f9617ffccc0, ansp=0x7f9617ffcb78, buflen2=<optimized out>, buf2=<optimized out>, buflen=<optimized out>, buf=<optimized out>, 
+    statp=<optimized out>) at res_send.c:1112
+#2  __res_context_send (ctx=ctx@entry=0x7f9618000bb0, buf=buf@entry=0x7f9617ffccf0 "m=\001", buflen=buflen@entry=37, buf2=buf2@entry=0x7f9617ffcd18 "<H\001", 
+    buflen2=buflen2@entry=37, ans=<optimized out>, ans@entry=0x7f9617ffd980 "\220\021\210\060\377\177", anssiz=<optimized out>, ansp=<optimized out>, 
+    ansp2=<optimized out>, nansp2=<optimized out>, resplen2=<optimized out>, ansp2_malloced=<optimized out>) at res_send.c:519
+#3  0x00007f962e875c43 in __GI___res_context_query (ctx=ctx@entry=0x7f9618000bb0, name=name@entry=0x5621431dad80 "packages.deepin.com", class=class@entry=1, 
+    type=type@entry=439963904, answer=answer@entry=0x7f9617ffd980 "\220\021\210\060\377\177", anslen=anslen@entry=2048, answerp=0x7f9617ffe1d0, 
+    answerp2=0x7f9617ffe1d8, nanswerp2=0x7f9617ffe1c0, resplen2=0x7f9617ffe1c4, answerp2_malloced=0x7f9617ffe1c8) at res_query.c:216
+#4  0x00007f962e876286 in __res_context_querydomain (ctx=ctx@entry=0x7f9618000bb0, name=name@entry=0x5621431dad80 "packages.deepin.com", 
+    domain=domain@entry=0x0, class=class@entry=1, type=type@entry=439963904, answer=answer@entry=0x7f9617ffd980 "\220\021\210\060\377\177", anslen=2048, 
+    answerp=0x7f9617ffe1d0, answerp2=0x7f9617ffe1d8, nanswerp2=0x7f9617ffe1c0, resplen2=0x7f9617ffe1c4, answerp2_malloced=0x7f9617ffe1c8) at res_query.c:601
+#5  0x00007f962e87684d in __GI___res_context_search (ctx=ctx@entry=0x7f9618000bb0, name=name@entry=0x5621431dad80 "packages.deepin.com", class=class@entry=1, 
+    type=type@entry=439963904, answer=answer@entry=0x7f9617ffd980 "\220\021\210\060\377\177", anslen=anslen@entry=2048, answerp=<optimized out>, 
+    answerp2=<optimized out>, nanswerp2=<optimized out>, resplen2=<optimized out>, answerp2_malloced=<optimized out>) at res_query.c:370
+#6  0x00007f962db850ba in _nss_dns_gethostbyname4_r (name=name@entry=0x5621431dad80 "packages.deepin.com", pat=pat@entry=0x7f9617ffe328, 
+    buffer=0x7f9617ffe5b0 "\n\024@F", buflen=1024, errnop=errnop@entry=0x7f9617fff470, herrnop=herrnop@entry=0x7f9617fff4d4, ttlp=0x0)
+    at nss_dns/dns-host.c:371
+#7  0x00007f962edc7f4a in gaih_inet (name=<optimized out>, name@entry=0x5621431dad80 "packages.deepin.com", service=service@entry=0x7f9617ffe550, 
+    req=req@entry=0x56214319d870, pai=pai@entry=0x7f9617ffe538, naddrs=naddrs@entry=0x7f9617ffe534, tmpbuf=tmpbuf@entry=0x7f9617ffe5a0)
+    at ../sysdeps/posix/getaddrinfo.c:770
+--Type <RET> for more, q to quit, c to continue without paging--
+#8  0x00007f962edc8f77 in __GI_getaddrinfo (name=<optimized out>, service=<optimized out>, service@entry=0x7f9617ffea6c "80", 
+    hints=hints@entry=0x56214319d870, pai=pai@entry=0x7f9617ffea10) at ../sysdeps/posix/getaddrinfo.c:2265
+#9  0x00007f962ef0e917 in Curl_getaddrinfo_ex (nodename=<optimized out>, servname=servname@entry=0x7f9617ffea6c "80", hints=hints@entry=0x56214319d870, 
+    result=result@entry=0x56214319d868) at curl_addrinfo.c:131
+#10 0x00007f962ef19daf in getaddrinfo_thread (arg=arg@entry=0x56214319d848) at asyn-thread.c:282
+#11 0x00007f962ef1714b in curl_thread_create_thunk (arg=<optimized out>) at curl_threads.c:57
+#12 0x00007f962eeadfa3 in start_thread (arg=<optimized out>) at pthread_create.c:486
+#13 0x00007f962edde60f in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:95
+
+Thread 4 (Thread 0x7f961f7fe700 (LWP 25706)):
+#0  0x00007f962edd3959 in __GI___poll (fds=fds@entry=0x7f961f7fbbc8, nfds=nfds@entry=1, timeout=5000, 
+    timeout@entry=<error reading variable: That operation is not available on integers of more than 8 bytes.>) at ../sysdeps/unix/sysv/linux/poll.c:29
+#1  0x00007f962e878207 in send_dg (ansp2_malloced=<optimized out>, resplen2=<optimized out>, anssizp2=<optimized out>, ansp2=<optimized out>, 
+    anscp=<optimized out>, gotsomewhere=<synthetic pointer>, v_circuit=<synthetic pointer>, ns=<optimized out>, terrno=0x7f961f7fbb88, 
+    anssizp=0x7f961f7fbcc0, ansp=0x7f961f7fbb78, buflen2=<optimized out>, buf2=<optimized out>, buflen=<optimized out>, buf=<optimized out>, 
+    statp=<optimized out>) at res_send.c:1112
+#2  __res_context_send (ctx=ctx@entry=0x7f9610000b20, buf=buf@entry=0x7f961f7fbcf0 "\230\364\001", buflen=buflen@entry=37, 
+    buf2=buf2@entry=0x7f961f7fbd18 "\006\001\001", buflen2=buflen2@entry=37, ans=<optimized out>, ans@entry=0x7f961f7fc980 "\220\320\177\020\226\177", 
+    anssiz=<optimized out>, ansp=<optimized out>, ansp2=<optimized out>, nansp2=<optimized out>, resplen2=<optimized out>, ansp2_malloced=<optimized out>)
+    at res_send.c:519
+#3  0x00007f962e875c43 in __GI___res_context_query (ctx=ctx@entry=0x7f9610000b20, name=name@entry=0x562143143800 "packages.deepin.com", class=class@entry=1, 
+    type=type@entry=439963904, answer=answer@entry=0x7f961f7fc980 "\220\320\177\020\226\177", anslen=anslen@entry=2048, answerp=0x7f961f7fd1d0, 
+    answerp2=0x7f961f7fd1d8, nanswerp2=0x7f961f7fd1c0, resplen2=0x7f961f7fd1c4, answerp2_malloced=0x7f961f7fd1c8) at res_query.c:216
+#4  0x00007f962e876286 in __res_context_querydomain (ctx=ctx@entry=0x7f9610000b20, name=name@entry=0x562143143800 "packages.deepin.com", 
+    domain=domain@entry=0x0, class=class@entry=1, type=type@entry=439963904, answer=answer@entry=0x7f961f7fc980 "\220\320\177\020\226\177", anslen=2048, 
+    answerp=0x7f961f7fd1d0, answerp2=0x7f961f7fd1d8, nanswerp2=0x7f961f7fd1c0, resplen2=0x7f961f7fd1c4, answerp2_malloced=0x7f961f7fd1c8) at res_query.c:601
+--Type <RET> for more, q to quit, c to continue without paging--
+#5  0x00007f962e87684d in __GI___res_context_search (ctx=ctx@entry=0x7f9610000b20, name=name@entry=0x562143143800 "packages.deepin.com", class=class@entry=1, 
+    type=type@entry=439963904, answer=answer@entry=0x7f961f7fc980 "\220\320\177\020\226\177", anslen=anslen@entry=2048, answerp=<optimized out>, 
+    answerp2=<optimized out>, nanswerp2=<optimized out>, resplen2=<optimized out>, answerp2_malloced=<optimized out>) at res_query.c:370
+#6  0x00007f962db850ba in _nss_dns_gethostbyname4_r (name=name@entry=0x562143143800 "packages.deepin.com", pat=pat@entry=0x7f961f7fd328, 
+    buffer=0x7f961f7fd5b0 "\n\024@F", buflen=1024, errnop=errnop@entry=0x7f961f7fe470, herrnop=herrnop@entry=0x7f961f7fe4d4, ttlp=0x0)
+    at nss_dns/dns-host.c:371
+#7  0x00007f962edc7f4a in gaih_inet (name=<optimized out>, name@entry=0x562143143800 "packages.deepin.com", service=service@entry=0x7f961f7fd550, 
+    req=req@entry=0x562143202ab0, pai=pai@entry=0x7f961f7fd538, naddrs=naddrs@entry=0x7f961f7fd534, tmpbuf=tmpbuf@entry=0x7f961f7fd5a0)
+    at ../sysdeps/posix/getaddrinfo.c:770
+#8  0x00007f962edc8f77 in __GI_getaddrinfo (name=<optimized out>, service=<optimized out>, service@entry=0x7f961f7fda6c "80", 
+    hints=hints@entry=0x562143202ab0, pai=pai@entry=0x7f961f7fda10) at ../sysdeps/posix/getaddrinfo.c:2265
+#9  0x00007f962ef0e917 in Curl_getaddrinfo_ex (nodename=<optimized out>, servname=servname@entry=0x7f961f7fda6c "80", hints=hints@entry=0x562143202ab0, 
+    result=result@entry=0x562143202aa8) at curl_addrinfo.c:131
+#10 0x00007f962ef19daf in getaddrinfo_thread (arg=arg@entry=0x562143202a88) at asyn-thread.c:282
+#11 0x00007f962ef1714b in curl_thread_create_thunk (arg=<optimized out>) at curl_threads.c:57
+#12 0x00007f962eeadfa3 in start_thread (arg=<optimized out>) at pthread_create.c:486
+#13 0x00007f962edde60f in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:95
+
+Thread 3 (Thread 0x7f962cb0c700 (LWP 24502)):
+#0  0x00007f962edd3959 in __GI___poll (fds=0x562143134ca0, nfds=2, timeout=-1) at ../sysdeps/unix/sysv/linux/poll.c:29
+#1  0x00007f962f0eb1f6 in g_main_context_poll (priority=<optimized out>, n_fds=2, fds=0x562143134ca0, timeout=<optimized out>, context=0x562143131a60)
+    at ../../../glib/gmain.c:4221
+#2  g_main_context_iterate (context=0x562143131a60, block=block@entry=1, dispatch=dispatch@entry=1, self=<optimized out>) at ../../../glib/gmain.c:3915
+#3  0x00007f962f0eb582 in g_main_loop_run (loop=0x562143131ba0) at ../../../glib/gmain.c:4116
+#4  0x00007f962f31d216 in gdbus_shared_thread_func (user_data=0x562143131a30) at ../../../gio/gdbusprivate.c:275
+#5  0x00007f962f113515 in g_thread_proxy (data=0x5621430fede0) at ../../../glib/gthread.c:784
+--Type <RET> for more, q to quit, c to continue without paging--
+#6  0x00007f962eeadfa3 in start_thread (arg=<optimized out>) at pthread_create.c:486
+#7  0x00007f962edde60f in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:95
+
+Thread 2 (Thread 0x7f962db0e700 (LWP 24500)):
+#0  0x00007f962edd3959 in __GI___poll (fds=0x5621430fffb0, nfds=2, timeout=3995) at ../sysdeps/unix/sysv/linux/poll.c:29
+#1  0x00007f962f0eb1f6 in g_main_context_poll (priority=<optimized out>, n_fds=2, fds=0x5621430fffb0, timeout=<optimized out>, context=0x562143115740)
+    at ../../../glib/gmain.c:4221
+#2  g_main_context_iterate (context=context@entry=0x562143115740, block=block@entry=1, dispatch=dispatch@entry=1, self=<optimized out>)
+    at ../../../glib/gmain.c:3915
+#3  0x00007f962f0eb31c in g_main_context_iteration (context=0x562143115740, may_block=may_block@entry=1) at ../../../glib/gmain.c:3981
+#4  0x00007f962f0eb361 in glib_worker_main (data=<optimized out>) at ../../../glib/gmain.c:5861
+#5  0x00007f962f113515 in g_thread_proxy (data=0x5621430fe630) at ../../../glib/gthread.c:784
+#6  0x00007f962eeadfa3 in start_thread (arg=<optimized out>) at pthread_create.c:486
+#7  0x00007f962edde60f in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:95
+
+Thread 1 (Thread 0x7f962e377b80 (LWP 24495)):
+#0  0x00007f962eeaf495 in __GI___pthread_timedjoin_ex (threadid=140282750297856, thread_return=thread_return@entry=0x0, abstime=abstime@entry=0x0, 
+    block=block@entry=true) at pthread_join_common.c:89
+#1  0x00007f962eeaf26c in __pthread_join (threadid=<optimized out>, thread_return=thread_return@entry=0x0) at pthread_join.c:24
+#2  0x00007f962ef17236 in Curl_thread_join (hnd=0x562143202a70) at curl_threads.c:93
+#3  0x00007f962ef19f6c in Curl_resolver_wait_resolv (conn=conn@entry=0x56214333e880, entry=entry@entry=0x0) at asyn-thread.c:504
+#4  0x00007f962ef1a089 in Curl_resolver_kill (conn=conn@entry=0x56214333e880) at asyn-thread.c:476
+#5  0x00007f962ef01415 in multi_done (data=data@entry=0x56214333f2b0, status=CURLE_OK, premature=premature@entry=true) at multi.c:537
+#6  0x00007f962ef038d4 in curl_multi_remove_handle (multi=0x56214314ddd0, data=0x56214333f2b0) at multi.c:718
+#7  0x000056214172b2af in cb_data_complete (cb_data=0x7f96240144e0, state=NM_CONNECTIVITY_LIMITED, log_message=0x562141780940 "timeout")
+    at src/nm-connectivity.c:192
+--Type <RET> for more, q to quit, c to continue without paging--
+#8  0x000056214172b6f5 in _timeout_cb (user_data=<error reading variable: value has been optimized out>) at src/nm-connectivity.c:533
+#9  0x00007f962f0eb923 in g_timeout_dispatch (source=0x56214319fe90, callback=<optimized out>, user_data=<optimized out>) at ../../../glib/gmain.c:4667
+#10 0x00007f962f0eae98 in g_main_dispatch (context=0x5621430f45c0) at ../../../glib/gmain.c:3182
+#11 g_main_context_dispatch (context=context@entry=0x5621430f45c0) at ../../../glib/gmain.c:3847
+#12 0x00007f962f0eb288 in g_main_context_iterate (context=0x5621430f45c0, block=block@entry=1, dispatch=dispatch@entry=1, self=<optimized out>)
+    at ../../../glib/gmain.c:3920
+#13 0x00007f962f0eb582 in g_main_loop_run (loop=0x5621430ce8b0) at ../../../glib/gmain.c:4116
+#14 0x00005621415cb153 in main (argc=<optimized out>, argv=<optimized out>) at src/main.c:442
+(gdb) 
+(gdb) 
+(gdb) 
+(gdb) 
+(gdb) p/x 140282750297856
+$1 = 0x7f961f7fe700
+(gdb) 
+$2 = 0x7f961f7fe700
+(gdb) 
+$3 = 0x7f961f7fe700
+(gdb) 
+$4 = 0x7f961f7fe700
+(gdb) she date
+2022年 11月 16日 星期三 17:39:10 CST
+(gdb) c
+Continuing.
+[Thread 0x7f9617fff700 (LWP 25707) exited]
+[Thread 0x7f961f7fe700 (LWP 25706) exited]
+[New Thread 0x7f9617fff700 (LWP 26944)]
+[New Thread 0x7f961f7fe700 (LWP 26946)]
+[New Thread 0x7f962d30d700 (LWP 26947)]
