@@ -88,3 +88,14 @@ services:
       - HOST=etcd_web
     ports:
       - "8091:8080"
+
+  db:
+    image: mysql
+    hostname: "db"
+    ports:
+      - "53306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    volumes:
+      - ./data/mysql/conf:/etc/mysql/conf.d
+      - ./data/mysql/data:/var/lib/mysql
