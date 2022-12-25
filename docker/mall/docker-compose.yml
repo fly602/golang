@@ -8,6 +8,8 @@ services:
   golang:                                # 自定义容器名称
     build:
       context: ./golang                  # 指定构建使用的 Dockerfile 文件
+    image: go1.18
+    container_name: go1.18
     environment:
       - TZ=${TZ}
       - LANG=C.UTF-8

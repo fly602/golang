@@ -3,7 +3,7 @@ ListenOn: 0.0.0.0:9000
 
 Etcd:
   Hosts:
-  - etcd:2379
+  - etcd1:2379
   Key: user.rpc
 
 Mysql:

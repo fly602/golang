@@ -17,5 +17,5 @@ Auth:
 UserRpc:
   Etcd:
     Hosts:
-    - etcd:2379
+    - etcd1:2379
     Key: user.rpc
