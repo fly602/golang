@@ -18,4 +18,6 @@ UserRpc:
   Etcd:
     Hosts:
     - etcd1:2379
+    - etcd2:2379
+    - etcd3:2379
     Key: user.rpc
