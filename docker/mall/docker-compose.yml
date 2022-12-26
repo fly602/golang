@@ -101,6 +101,8 @@ services:
     volumes:
       - ./data/mysql/conf:/etc/mysql/conf.d
       - ./data/mysql/data:/var/lib/mysql
+    networks:
+      - backend
     
   cache:
     image: redis
@@ -111,4 +113,6 @@ services:
       - ./data/redis/data:/data
       - ./data/redis:/etc/redis
     command: /bin/bash -c "redis-server /etc/redis/redis.conf"
+    networks:
+      - backend
 
