@@ -93,7 +93,7 @@ services:
 
   db:
     image: mysql
-    hostname: "db"
+    hostname: "mysql"
     ports:
       - "53306:3306"
     environment:
@@ -101,3 +101,14 @@ services:
     volumes:
       - ./data/mysql/conf:/etc/mysql/conf.d
       - ./data/mysql/data:/var/lib/mysql
+    
+  cache:
+    image: redis
+    hostname: "redis"
+    ports:
+      - "56379:6379"
+    volumes:
+      - ./data/redis/data:/data
+      - ./data/redis:/etc/redis
+    command: /bin/bash -c "redis-server /etc/redis/redis.conf"
+
