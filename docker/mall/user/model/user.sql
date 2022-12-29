@@ -1,3 +1,6 @@
+CREATE DATABASE mall;
+
+use mall;
 CREATE TABLE `user` (
 	`id` bigint unsigned NOT NULL AUTO_INCREMENT,
 	`name` varchar(255)  NOT NULL DEFAULT '' COMMENT '用户姓名',
