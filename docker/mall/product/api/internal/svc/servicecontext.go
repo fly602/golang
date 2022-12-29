@@ -3,7 +3,7 @@ package svc
 import (
 	"go-community/docker/mall/product/api/internal/config"
 	"go-community/docker/mall/product/rpc/productclient"
-	"go-community/docker/mall/vendor/github.com/zeromicro/go-zero/zrpc"
+	"github.com/zeromicro/go-zero/zrpc"
 )
 
 type ServiceContext struct {

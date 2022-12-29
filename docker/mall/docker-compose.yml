@@ -135,3 +135,57 @@ services:
       - "8000:8000"
     networks:
       - backend
+
+  productrpc:
+    build: ./user/rpc
+    container_name: "productrpc"
+    hostname: "productrpc"
+    ports:
+      - "9001:9001"
+    networks:
+      - backend
+
+  productapi:
+    build: ./user/api
+    container_name: "productapi"
+    hostname: "productapi"
+    ports:
+      - "8001:8001"
+    networks:
+      - backend
+    
+  orderrpc:
+    build: ./user/rpc
+    container_name: "orderrpc"
+    hostname: "orderrpc"
+    ports:
+      - "9002:9002"
+    networks:
+      - backend
+
+  orderapi:
+    build: ./user/api
+    container_name: "orderapi"
+    hostname: "orderapi"
+    ports:
+      - "8002:8002"
+    networks:
+      - backend
+
+  payrpc:
+    build: ./user/rpc
+    container_name: "payrpc"
+    hostname: "payrpc"
+    ports:
+      - "9003:9003"
+    networks:
+      - backend
+
+  payapi:
+    build: ./user/api
+    container_name: "payapi"
+    hostname: "payapi"
+    ports:
+      - "8003:8003"
+    networks:
+      - backend
