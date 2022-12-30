@@ -9,4 +9,4 @@ WORKDIR /usr/bin/
 
 EXPOSE 9003
 
-ENTRYPOINT ["/usr/bin/payrpc", "-f","/etc/user.yaml"]
+ENTRYPOINT ["/usr/bin/payrpc", "-f","/etc/pay.yaml"]

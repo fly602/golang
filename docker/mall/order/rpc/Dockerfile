@@ -9,4 +9,4 @@ WORKDIR /usr/bin/
 
 EXPOSE 9002
 
-ENTRYPOINT ["/usr/bin/orderrpc", "-f","/etc/user.yaml"]
+ENTRYPOINT ["/usr/bin/orderrpc", "-f","/etc/order.yaml"]

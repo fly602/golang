@@ -9,4 +9,4 @@ WORKDIR /usr/bin/
 
 EXPOSE 8001
 
-ENTRYPOINT ["/usr/bin/productapi", "-f","/etc/user.yaml"]
+ENTRYPOINT ["/usr/bin/productapi", "-f","/etc/product.yaml"]

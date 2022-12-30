@@ -9,4 +9,4 @@ WORKDIR /usr/bin/
 
 EXPOSE 8003
 
-ENTRYPOINT ["/usr/bin/payapi", "-f","/etc/user.yaml"]
+ENTRYPOINT ["/usr/bin/payapi", "-f","/etc/pay.yaml"]
