@@ -7,6 +7,8 @@ COPY orderrpc /usr/bin
 
 WORKDIR /usr/bin/
 
+RUN apk add tzdata
+
 EXPOSE 9002
 
 ENTRYPOINT ["/usr/bin/orderrpc", "-f","/etc/order.yaml"]

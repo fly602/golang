@@ -5,6 +5,8 @@ USER root
 COPY ./etc /etc/
 COPY productapi /usr/bin
 
+RUN apk add tzdata
+
 WORKDIR /usr/bin/
 
 EXPOSE 8001
