@@ -137,7 +137,7 @@ services:
       - backend
 
   productrpc:
-    build: ./user/rpc
+    build: ./product/rpc
     container_name: "productrpc"
     hostname: "productrpc"
     ports:
@@ -146,7 +146,7 @@ services:
       - backend
 
   productapi:
-    build: ./user/api
+    build: ./product/api
     container_name: "productapi"
     hostname: "productapi"
     ports:
@@ -155,7 +155,7 @@ services:
       - backend
     
   orderrpc:
-    build: ./user/rpc
+    build: ./order/rpc
     container_name: "orderrpc"
     hostname: "orderrpc"
     ports:
@@ -164,7 +164,7 @@ services:
       - backend
 
   orderapi:
-    build: ./user/api
+    build: ./order/api
     container_name: "orderapi"
     hostname: "orderapi"
     ports:
@@ -173,7 +173,7 @@ services:
       - backend
 
   payrpc:
-    build: ./user/rpc
+    build: ./pay/rpc
     container_name: "payrpc"
     hostname: "payrpc"
     ports:
@@ -182,7 +182,7 @@ services:
       - backend
 
   payapi:
-    build: ./user/api
+    build: ./pay/api
     container_name: "payapi"
     hostname: "payapi"
     ports:
