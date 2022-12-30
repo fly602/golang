@@ -1,4 +1,4 @@
-FROM alpine
+FROM go1.18
 
 USER root
 
@@ -6,8 +6,6 @@ COPY ./etc /etc/
 COPY userapi /usr/bin
 
 WORKDIR /usr/bin/
-
-RUN apk add tzdata
 
 EXPOSE 8000
 
