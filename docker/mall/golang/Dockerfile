@@ -15,7 +15,9 @@ RUN apt-get update && \
     git \
     openssh-server \
     bash-completion \
-    vim 
+    vim \
+    tzdata \
+    iputils-ping
 
 # 安装 goctl
 USER root

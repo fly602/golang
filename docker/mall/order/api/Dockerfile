@@ -1,4 +1,4 @@
-FROM alpine
+FROM go1.18
 
 USER root
 
@@ -7,7 +7,7 @@ COPY orderapi /usr/bin
 
 WORKDIR /usr/bin/
 
-RUN apk add tzdata
+# RUN apk add tzdata
 
 EXPOSE 8002
 

@@ -158,6 +158,8 @@ services:
     build: ./order/rpc
     container_name: "orderrpc"
     hostname: "orderrpc"
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
     ports:
       - "9002:9002"
     networks:
@@ -167,6 +169,8 @@ services:
     build: ./order/api
     container_name: "orderapi"
     hostname: "orderapi"
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
     ports:
       - "8002:8002"
     networks:
