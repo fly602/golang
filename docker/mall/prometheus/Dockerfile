@@ -1,1 +1,1 @@
-FROM prometheus
+FROM bitnami/prometheus
