@@ -111,7 +111,7 @@ services:
       - backend
     
   cache:
-    image: redis
+    build: ./redis
     hostname: "redis"
     container_name: "redis"
     environment:
@@ -177,6 +177,8 @@ services:
     build: ./order/rpc
     container_name: "orderrpc"
     hostname: "orderrpc"
+    stdin_open: true                     # 打开标准输入，可以接受外部输入
+    tty: true
     environment:
       - TZ=${TZ}    
     volumes:
@@ -205,6 +207,10 @@ services:
     build: ./pay/rpc
     container_name: "payrpc"
     hostname: "payrpc"
+    stdin_open: true                     # 打开标准输入，可以接受外部输入
+    tty: true
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
     environment:
       - TZ=${TZ}    
     ports:

@@ -10,7 +10,10 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
-var _ PayModel = (*customPayModel)(nil)
+var (
+	_                 PayModel = (*customPayModel)(nil)
+	cachePayOidPrefix          = "cache:pay:oid:"
+)
 
 type (
 	// PayModel is an interface to be customized, add more methods here,
@@ -33,7 +36,7 @@ func NewPayModel(conn sqlx.SqlConn, c cache.CacheConf) PayModel {
 }
 
 func (m *defaultPayModel) FindOneByOid(ctx context.Context, oid int64) (*Pay, error) {
-	payOidKey := fmt.Sprintf("%s%v", cachePayIdPrefix, oid)
+	payOidKey := fmt.Sprintf("%s%v", cachePayOidPrefix, oid)
 	var resp Pay
 	err := m.QueryRowCtx(ctx, &resp, payOidKey, func(ctx context.Context, conn sqlx.SqlConn, v interface{}) error {
 		query := fmt.Sprintf("select %s from %s where `oid` = ? limit 1", payRows, m.table)
