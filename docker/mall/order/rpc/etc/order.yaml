@@ -17,6 +17,8 @@ CacheRedis:
   Pass:
 
 UserRpc:
+  App: orderrpc                          # App 标识
+  Token: ashfjkaHJKaHJKHFalshjdlaHLKHa  # Token 值
   Etcd:
     Hosts:
     - etcd1:2379
