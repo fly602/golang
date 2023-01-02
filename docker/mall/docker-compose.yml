@@ -268,3 +268,20 @@ services:
       - backend
     restart: always
     
+  dtm:
+    build:
+      context: ./dtm
+    environment:
+      - TZ=${TZ}
+    entrypoint:
+      - "/app/dtm/dtm"
+      - "-c=/app/dtm/configs/config.yaml"
+    privileged: true
+    volumes:
+      - ./dtm/config.yml:/app/dtm/configs/config.yaml # 将 dtm 配置文件挂载到容器里
+    ports:
+      - "${DTM_HTTP_PORT}:36789"
+      - "${DTM_GRPC_PORT}:36790"
+    networks:
+      - backend
+    restart: always
