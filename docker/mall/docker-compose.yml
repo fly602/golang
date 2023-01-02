@@ -3,7 +3,8 @@ version: '3.5'
 networks:
   backend:
     driver: ${NETWORKS_DRIVER}
-
+# golang 静态编译
+# CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"'
 services:
   golang:                                # 自定义容器名称
     build:
@@ -129,6 +130,8 @@ services:
     build: ./user/rpc
     container_name: "userrpc"
     hostname: "userrpc"
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
     environment:
       - TZ=${TZ}
     ports:
@@ -140,6 +143,8 @@ services:
     build: ./user/api
     container_name: "userapi"
     hostname: "userapi"
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
     environment:
       - TZ=${TZ}    
     depends_on:
@@ -153,6 +158,8 @@ services:
     build: ./product/rpc
     container_name: "productrpc"
     hostname: "productrpc"
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
     environment:
       - TZ=${TZ}    
     ports:
@@ -164,6 +171,8 @@ services:
     build: ./product/api
     container_name: "productapi"
     hostname: "productapi"
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
     environment:
       - TZ=${TZ}    
     depends_on:
@@ -222,6 +231,8 @@ services:
     build: ./pay/api
     container_name: "payapi"
     hostname: "payapi"
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
     environment:
       - TZ=${TZ}    
     depends_on:

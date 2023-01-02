@@ -8,6 +8,7 @@ import (
 	"go-community/docker/mall/order/api/internal/handler"
 	"go-community/docker/mall/order/api/internal/svc"
 
+	_ "github.com/dtm-labs/driver-gozero" // 添加导入 `gozero` 的 `dtm` 驱动
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
 )
