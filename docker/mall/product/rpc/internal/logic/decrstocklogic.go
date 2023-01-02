@@ -50,7 +50,7 @@ func (l *DecrStockLogic) DecrStock(in *product.DecrStockRequest) (*product.DecrS
 		}
 		affected, err := result.RowsAffected()
 		// 库存不足，返回子事务失败
-		if err != nil && affected == 0 {
+		if err == nil && affected == 0 {
 			return dtmcli.ErrFailure
 		}
 		return err

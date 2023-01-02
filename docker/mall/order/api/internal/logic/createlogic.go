@@ -53,7 +53,7 @@ func (l *CreateLogic) Create(req *types.CreateRequest) (resp *types.CreateRespon
 			Amount: req.Amount,
 			Status: req.Status,
 		}).
-		Add(productRpcBusiServer+"product.Product/DecrStock", productRpcBusiServer+"product.Product/DecrStockRevert", &productclient.DecrStockRequest{
+		Add(productRpcBusiServer+"/product.Product/DecrStock", productRpcBusiServer+"/product.Product/DecrStockRevert", &productclient.DecrStockRequest{
 			Id:  req.Pid,
 			Num: 1,
 		})
