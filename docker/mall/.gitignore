@@ -1,16 +1,16 @@
-*/vendor/
-*/*/vendor/
-*/*/*/vendor/
+vendor
 
-*/go.mod
-*/*/go.mod
-*/*/*/go.mod
-*/*/*/*/go.mod
+go.mod
+go.sum
 
-*/go.sum
-*/*/go.sum
-*/*/*/go.sum
-*/*/*/*/go.sum
+userrpc
+userapi
+productapi
+productrpc
+orderapi
+orderrpc
+payapi
+payrpc
 
 .vscode
 .idea
