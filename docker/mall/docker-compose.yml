@@ -24,6 +24,9 @@ services:
   etcd1:
     image: bitnami/etcd
     container_name: etcd1
+    hostname: etcd1
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
     networks:
       - backend
     ports:
@@ -44,6 +47,7 @@ services:
   etcd2:
     image: bitnami/etcd
     container_name: etcd2
+    hostname: etcd2
     networks:
       - backend
     ports:
@@ -64,6 +68,7 @@ services:
   etcd3:
     image: bitnami/etcd
     container_name: etcd3
+    hostname: etcd3
     networks:
       - backend
     ports:
@@ -84,6 +89,8 @@ services:
   etcd_web:
     image: evildecay/etcdkeeper
     container_name: etcd_web
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
     networks:
       - backend
     depends_on:
