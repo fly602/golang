@@ -1,16 +1,7 @@
-*/vendor/
-*/*/vendor/
-*/*/*/vendor/
+vendor
 
-*/go.mod
-*/*/go.mod
-*/*/*/go.mod
-*/*/*/*/go.mod
-
-*/go.sum
-*/*/go.sum
-*/*/*/go.sum
-*/*/*/*/go.sum
+go.mod
+go.sum
 
 .vscode
 .idea
