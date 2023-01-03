@@ -2,10 +2,10 @@ FROM golang:1.18
 
 LABEL maintainer="fuleyi <fuleyi@outlook.com>"
 
-ENV GOPROXY https://goproxy.cn,direct
+# 创建一个普通用户
+RUN useradd -ms /bin/bash normal
 
 USER root
-
 RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list && \
     sed -i 's/security.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list && \
     sed -i 's/security-cdn.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list && \  
@@ -22,10 +22,10 @@ RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.lis
     tzdata \
     iputils-ping
 
-# 安装 goctl
-USER root
-RUN GOPROXY=https://goproxy.cn/,direct go install github.com/zeromicro/go-zero/tools/goctl@latest
 
+USER normal
+RUN go env -w GOPROXY=https://goproxy.cn/,direct GOPATH=$GOPATH:/usr
+# 安装vscode的go插件/protoc-gen-go/protoc-gen-go-grpc/goctl
 RUN export GOPROXY=https://goproxy.cn/,direct && \
     go install github.com/cweill/gotests/gotests@latest && \
     go install github.com/fatih/gomodifytags@latest && \
@@ -33,8 +33,18 @@ RUN export GOPROXY=https://goproxy.cn/,direct && \
     go install github.com/haya14busa/goplay/cmd/goplay@latest && \
     go install github.com/go-delve/delve/cmd/dlv@latest && \
     go install honnef.co/go/tools/cmd/staticcheck@latest && \
-    go install golang.org/x/tools/gopls@latest
+    go install golang.org/x/tools/gopls@latest && \
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest &&\
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest &&\
+    go install github.com/zeromicro/go-zero/tools/goctl@latest
 
+USER root
+# 安装 protoc
+COPY protoc-21.12-linux-x86_64.zip /tmp/protoc.zip
+RUN unzip -d /tmp/protoc /tmp/protoc.zip && \
+    mv /tmp/protoc/bin/protoc $GOPATH/bin
+
+# 命令行开启自动补全
 RUN echo 'if ! shopt -oq posix; then \n\
   if [ -f /usr/share/bash-completion/bash_completion ]; then \n\
     . /usr/share/bash-completion/bash_completion \n\
@@ -43,26 +53,11 @@ RUN echo 'if ! shopt -oq posix; then \n\
   fi \n\
 fi'\
 >> /etc/bash.bashrc
-
-# 安装 protoc
-USER root
-COPY protoc-21.12-linux-x86_64.zip /tmp/protoc.zip
-RUN unzip -d /tmp/protoc /tmp/protoc.zip && \
-    mv /tmp/protoc/bin/protoc $GOPATH/bin
-
-# 安装 protoc-gen-go
-USER root
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-
-# 安装 protoc-gen-go-grpc
-USER root
-RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-
+# goctl自动补全
 RUN goctl completion bash > /etc/bash_completion.d/goctl
 
 # $GOPATH/bin添加到环境变量中
 ENV PATH $GOPATH/bin:$PATH
-ENV GOPATH $GOPATH:/usr
 
 # 清理垃圾
 USER root
