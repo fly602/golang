@@ -90,6 +90,7 @@ services:
   etcd_web:
     image: evildecay/etcdkeeper
     container_name: etcd_web
+    hostname: "etcd_web"
     volumes:
       - /home/uos/dde-go/src:/usr/src
     networks:
