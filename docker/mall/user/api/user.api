@@ -45,6 +45,7 @@ service User {
 
 @server(
 	jwt: Auth
+	middleware: Example // 路由中间件声明
 )
 service User {
 	@handler UserInfo

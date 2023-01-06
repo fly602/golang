@@ -6,21 +6,22 @@ networks:
 # golang 静态编译
 # CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"'
 services:
-  # 使用makefile构建编译环境，此处不需要了
-  # golang:                                # 自定义容器名称
-  #   build:
-  #     context: ./golang                  # 指定构建使用的 Dockerfile 文件
-  #   image: go1.18
-  #   container_name: go1.18
-  #   environment:
-  #     - TZ=${TZ}
-  #     - LANG=C.UTF-8
-  #   volumes:
-  #     - /home/uos/dde-go/src:/usr/src
-  #   stdin_open: true                     # 打开标准输入，可以接受外部输入
-  #   tty: true
-  #   networks:
-  #     - backend
+  ## 使用makefile构建编译环境，此处不需要了,可以根据调试需要放开
+  golang:                                # 自定义容器名称
+    build:
+      context: ./golang                  # 指定构建使用的 Dockerfile 文件
+    image: go1.18
+    container_name: go1.18
+    environment:
+      - TZ=${TZ}
+      - LANG=C.UTF-8
+    volumes:
+      - /home/uos/dde-go/src:/usr/src
+    stdin_open: true                     # 打开标准输入，可以接受外部输入
+    tty: true
+    working_dir: /usr/src/go-community
+    networks:
+      - backend
 
   etcd1:
     image: bitnami/etcd
