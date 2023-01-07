@@ -22,9 +22,11 @@ RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.lis
     tzdata \
     iputils-ping
 
+RUN go env -w GOPROXY=https://goproxy.cn/,direct 
+ENV GOPATH="/go:/usr"
+
 
 USER normal
-RUN go env -w GOPROXY=https://goproxy.cn/,direct GOPATH=$GOPATH:/usr
 # 安装vscode的go插件/protoc-gen-go/protoc-gen-go-grpc/goctl
 RUN export GOPROXY=https://goproxy.cn/,direct && \
     go install github.com/cweill/gotests/gotests@latest && \
@@ -42,7 +44,7 @@ USER root
 # 安装 protoc
 COPY protoc-21.12-linux-x86_64.zip /tmp/protoc.zip
 RUN unzip -d /tmp/protoc /tmp/protoc.zip && \
-    mv /tmp/protoc/bin/protoc $GOPATH/bin
+    mv /tmp/protoc/bin/protoc /usr/bin
 
 # 命令行开启自动补全
 RUN echo 'if ! shopt -oq posix; then \n\
