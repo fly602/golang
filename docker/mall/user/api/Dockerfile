@@ -11,4 +11,4 @@ EXPOSE 8000
 
 USER normal
 
-# ENTRYPOINT ["/usr/bin/userapi", "-f","/etc/user.yaml"]
+ENTRYPOINT ["/usr/bin/userapi", "-f","/etc/user.yaml"]

@@ -159,8 +159,6 @@ services:
       - TZ=${TZ}    
     depends_on:
       - "userrpc"
-    stdin_open: true                     # 打开标准输入，可以接受外部输入
-    tty: true
     ports:
       - "8000:8000"
     networks:
