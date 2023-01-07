@@ -2,6 +2,11 @@ package jwtx
 
 import "github.com/golang-jwt/jwt"
 
+type JwtAuth struct {
+	AccessSecret string
+	AccessExpire int64
+}
+
 func GetToken(secretKey string, iat, seconds, uid int64) (string, error) {
 	claims := make(jwt.MapClaims)
 	claims["exp"] = iat + seconds

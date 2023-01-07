@@ -2,9 +2,9 @@ package logic
 
 import (
 	"context"
+	jwtx "go-community/docker/mall/common/jwt"
 	"go-community/docker/mall/user/api/internal/svc"
 	"go-community/docker/mall/user/api/internal/types"
-	jwtx "go-community/docker/mall/user/common/jwt"
 	"go-community/docker/mall/user/rpc/types/user"
 	"time"
 

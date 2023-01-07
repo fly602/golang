@@ -1,32 +1,30 @@
-package middleware
+package jwtx
 
 import (
 	"encoding/json"
 	"fmt"
-	"go-community/docker/mall/user/api/internal/config"
-	jwtx "go-community/docker/mall/user/common/jwt"
 	"net/http"
 	"time"
 )
 
 type JwtheaderMiddleware struct {
-	Config config.Config
+	Auth JwtAuth
 }
 
-func NewJwtheaderMiddleware(c config.Config) *JwtheaderMiddleware {
+func NewJwtheaderMiddleware(j JwtAuth) *JwtheaderMiddleware {
 	return &JwtheaderMiddleware{
-		Config: c,
+		Auth: j,
 	}
 }
 
 func (m *JwtheaderMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO generate middleware implement function, delete after code implementation
-		exp := m.Config.Auth.AccessExpire
+		exp := m.Auth.AccessExpire
 		now := time.Now().Unix()
 		uid, _ := r.Context().Value("uid").(json.Number).Int64()
 		fmt.Printf("exp=%+v,now=%+v,uid=%+v", exp, now, uid)
-		accessToken, err := jwtx.GetToken(m.Config.Auth.AccessSecret, now, exp, uid)
+		accessToken, err := GetToken(m.Auth.AccessSecret, now, exp, uid)
 		if err != nil {
 			next(w, r)
 			return

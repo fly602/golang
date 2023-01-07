@@ -3,7 +3,7 @@ package logic
 import (
 	"context"
 
-	"go-community/docker/mall/user/common/cryptx"
+	"go-community/docker/mall/common/cryptx"
 	"go-community/docker/mall/user/model"
 	"go-community/docker/mall/user/rpc/internal/svc"
 	"go-community/docker/mall/user/rpc/types/user"
