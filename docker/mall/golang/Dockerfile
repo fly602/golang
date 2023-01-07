@@ -22,9 +22,9 @@ RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.lis
     tzdata \
     iputils-ping
 
-RUN go env -w GOPROXY=https://goproxy.cn/,direct 
-ENV GOPATH="/go:/usr"
-
+ENV GOPROXY=https://goproxy.cn/,direct \
+    GOPATH="/go:/usr" \
+    PATH=$GOPATH/bin:$PATH
 
 USER normal
 # 安装vscode的go插件/protoc-gen-go/protoc-gen-go-grpc/goctl
@@ -57,9 +57,6 @@ fi'\
 >> /etc/bash.bashrc
 # goctl自动补全
 RUN goctl completion bash > /etc/bash_completion.d/goctl
-
-# $GOPATH/bin添加到环境变量中
-ENV PATH $GOPATH/bin:$PATH
 
 # 清理垃圾
 USER root
