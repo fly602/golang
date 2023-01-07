@@ -12,14 +12,14 @@ import (
 type ServiceContext struct {
 	Config config.Config
 
-	UserRpc user.User
-	Example rest.Middleware
+	UserRpc   user.User
+	JwtHeader rest.Middleware
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
-		Config:  c,
-		UserRpc: user.NewUser(zrpc.MustNewClient(c.UserRpc)),
-		Example: middleware.NewExampleMiddleware(c).Handle,
+		Config:    c,
+		UserRpc:   user.NewUser(zrpc.MustNewClient(c.UserRpc)),
+		JwtHeader: middleware.NewJwtheaderMiddleware(c).Handle,
 	}
 }

@@ -45,7 +45,7 @@ service User {
 
 @server(
 	jwt: Auth
-	middleware: jwtheader // jwt中间件，负责续约
+	middleware: JwtHeader // jwt中间件，负责续约
 )
 service User {
 	@handler UserInfo

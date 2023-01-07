@@ -9,17 +9,17 @@ import (
 	"time"
 )
 
-type ExampleMiddleware struct {
+type JwtheaderMiddleware struct {
 	Config config.Config
 }
 
-func NewExampleMiddleware(c config.Config) *ExampleMiddleware {
-	return &ExampleMiddleware{
+func NewJwtheaderMiddleware(c config.Config) *JwtheaderMiddleware {
+	return &JwtheaderMiddleware{
 		Config: c,
 	}
 }
 
-func (m *ExampleMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
+func (m *JwtheaderMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO generate middleware implement function, delete after code implementation
 		exp := m.Config.Auth.AccessExpire
@@ -33,6 +33,7 @@ func (m *ExampleMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 		}
 		// Passthrough to next handler if need
 		w.Header().Add("Authorization", accessToken)
+		// Passthrough to next handler if need
 		next(w, r)
 	}
 }
