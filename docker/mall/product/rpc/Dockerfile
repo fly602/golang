@@ -9,4 +9,6 @@ WORKDIR /usr/bin/
 
 EXPOSE 9001
 
+USER normal
+
 ENTRYPOINT ["/usr/bin/productrpc", "-f","/etc/product.yaml"]

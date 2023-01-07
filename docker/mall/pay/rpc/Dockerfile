@@ -9,4 +9,6 @@ WORKDIR /usr/bin/
 
 EXPOSE 9003
 
+USER normal
+
 ENTRYPOINT ["/usr/bin/payrpc", "-f","/etc/pay.yaml"]

@@ -11,4 +11,6 @@ WORKDIR /usr/bin/
 
 EXPOSE 8002
 
+USER normal
+
 ENTRYPOINT ["/usr/bin/orderapi", "-f","/etc/order.yaml"]

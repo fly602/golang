@@ -9,4 +9,6 @@ WORKDIR /usr/bin/
 
 EXPOSE 9000
 
+USER normal
+
 ENTRYPOINT ["/usr/bin/userrpc", "-f","/etc/user.yaml"]

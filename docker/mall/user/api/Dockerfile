@@ -9,4 +9,6 @@ WORKDIR /usr/bin/
 
 EXPOSE 8000
 
-ENTRYPOINT ["/usr/bin/userapi", "-f","/etc/user.yaml"]
+USER normal
+
+# ENTRYPOINT ["/usr/bin/userapi", "-f","/etc/user.yaml"]
