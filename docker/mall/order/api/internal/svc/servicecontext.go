@@ -5,7 +5,8 @@ import (
 	"go-community/docker/mall/order/api/internal/config"
 	"go-community/docker/mall/order/rpc/orderclient"
 	"go-community/docker/mall/product/rpc/productclient"
-	"go-community/docker/mall/vendor/github.com/zeromicro/go-zero/rest"
+
+	"github.com/zeromicro/go-zero/rest"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )

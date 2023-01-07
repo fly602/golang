@@ -11,28 +11,31 @@ import (
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodPost,
-				Path:    "/api/product/create",
-				Handler: CreateHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/api/product/update",
-				Handler: UpdateHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/api/product/remove",
-				Handler: RemoveHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/api/product/detail",
-				Handler: DetailHandler(serverCtx),
-			},
-		},
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.JwtHeader},
+			[]rest.Route{
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/product/create",
+					Handler: CreateHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/product/update",
+					Handler: UpdateHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/product/remove",
+					Handler: RemoveHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/product/detail",
+					Handler: DetailHandler(serverCtx),
+				},
+			}...,
+		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 	)
 }

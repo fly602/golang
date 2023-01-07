@@ -4,7 +4,8 @@ import (
 	jwtx "go-community/docker/mall/common/jwt"
 	"go-community/docker/mall/pay/api/internal/config"
 	"go-community/docker/mall/pay/rpc/payclient"
-	"go-community/docker/mall/vendor/github.com/zeromicro/go-zero/rest"
+
+	"github.com/zeromicro/go-zero/rest"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )
