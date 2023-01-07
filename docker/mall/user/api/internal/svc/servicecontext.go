@@ -20,6 +20,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
 		Config:  c,
 		UserRpc: user.NewUser(zrpc.MustNewClient(c.UserRpc)),
-		Example: middleware.NewExampleMiddleware().Handle,
+		Example: middleware.NewExampleMiddleware(c).Handle,
 	}
 }
