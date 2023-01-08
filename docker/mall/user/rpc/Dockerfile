@@ -2,13 +2,14 @@ FROM go1.18
 
 USER root
 
-COPY ./etc /etc/
-COPY userrpc /usr/bin
+COPY ./etc /opt/userrpc/etc/
+COPY userrpc /opt/userrpc/bin/
+RUN chown -R normal /opt/userrpc
 
-WORKDIR /usr/bin/
-
-EXPOSE 9000
+WORKDIR /opt/userrpc
 
 USER normal
 
-ENTRYPOINT ["/usr/bin/userrpc", "-f","/etc/user.yaml"]
+EXPOSE 9000
+
+ENTRYPOINT ["bin/userrpc", "-f","./etc/user.yaml"]
