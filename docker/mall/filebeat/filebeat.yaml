@@ -1,0 +1,27 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  # 开启json解析
+  json.keys_under_root: true
+  json.add_error_key: true
+  # 日志文件路径
+  paths:
+    - /var/log/order/*.log
+setup.template.settings:
+  index.number_of_shards: 1
+# 定义kafka topic field
+fields:
+  log_topic: log-collection
+# 输出到kafka
+output.kafka:
+  hosts: ["127.0.0.1:9092"]
+  topic: '%{[fields.log_topic]}'
+  partition.round_robin:
+    reachable_only: false
+  required_acks: 1
+  keep_alive: 10s
+# ================================= Processors =================================
+processors:
+  - decode_json_fields:
+      fields: ['@timestamp','level','content','trace','span','duration']
+      target: ""

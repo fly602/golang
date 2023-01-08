@@ -1,0 +1,46 @@
+Clusters:
+- Input:
+    Kafka:
+      Name: go-stash
+      Log:
+        Mode: file
+      Brokers:
+      - "127.0.0.1:9092"
+      Topics: 
+      - log-collection
+      Group: stash
+      Conns: 3
+      Consumers: 10
+      Processors: 60
+      MinBytes: 1048576
+      MaxBytes: 10485760
+      Offset: first
+  Filters:
+  - Action: drop
+    Conditions:
+      - Key: status
+        Value: "503"
+        Type: contains
+      - Key: type
+        Value: "app"
+        Type: match
+        Op: and
+  - Action: remove_field
+    Fields:
+    - source
+    - _score
+    - "@metadata"
+    - agent
+    - ecs
+    - input
+    - log
+    - fields
+  Output:
+    ElasticSearch:
+      Hosts:
+      - "http://127.0.0.1:9200"
+      Index: "go-stash-{{yyyy.MM.dd}}"
+      MaxChunkBytes: 5242880
+      GracePeriod: 10s
+      Compress: false
+      TimeZone: UTC
