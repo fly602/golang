@@ -306,3 +306,42 @@ services:
     networks:
       - backend
     restart: always
+
+  # 配置zookeeper 集群
+  zk1:
+    build: ./zookeeper
+    container_name: zk1
+    hostname: zk1
+    ports:
+      - "21821:2182"
+      - "21811:2181"
+    networks:
+      - backend
+    volumes:
+      - ./zookeeper/zk1/data:/data
+      - ./zookeeper/zk1/datalog:/datalog
+    environment:
+      - ZOO_MY_ID=1
+      - ZOO_SERVERS=server.1=zk1:2888:3888;2181
+
+  # 配置kafka中间件
+  broker1:
+    build: ./kafka
+    hostname: broker1
+    container_name: broker1
+    ports:
+      - "9192:9092"
+    # 依赖zookeeper启动
+    depends_on:
+      - zk1
+    networks:
+      - backend
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zk1:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.191:9192
+    volumes:
+      - ./kafka/broker1:/bitnami/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
