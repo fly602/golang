@@ -6,7 +6,7 @@ filebeat.inputs:
   json.add_error_key: true
   # 日志文件路径
   paths:
-    - /var/log/order/*.log
+    - /var/lib/docker/containers/*/*-json.log
 setup.template.settings:
   index.number_of_shards: 1
 # 定义kafka topic field

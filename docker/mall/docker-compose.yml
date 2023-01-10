@@ -295,6 +295,7 @@ services:
     environment:
       - TZ=${TZ}
     entrypoint:
+      - TZ=${TZ}    
       - "/app/dtm/dtm"
       - "-c=/app/dtm/configs/config.yaml"
     privileged: true
@@ -323,6 +324,7 @@ services:
     environment:
       - ZOO_MY_ID=1
       - ZOO_SERVERS=server.1=zk1:2888:3888;2181
+      - TZ=${TZ}      
 
   # 配置kafka中间件
   broker1:
@@ -336,6 +338,7 @@ services:
       - zk1
     networks:
       - backend
+      - TZ=${TZ}      
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_ZOOKEEPER_CONNECT=zk1:2181
@@ -345,3 +348,18 @@ services:
     volumes:
       - ./kafka/broker1:/bitnami/kafka
       - /var/run/docker.sock:/var/run/docker.sock
+
+  filebeat:
+    build: ./filebeat
+    container_name: filebeat
+    hostname: filebeat
+    environment:
+      - TZ=${TZ}
+    user: root
+    volumes:
+      - ./filebeat/filebeat.yaml:/usr/share/filebeat/filebeat.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers
+    networks:
+      - backend
+    depends_on:
+      - broker1
