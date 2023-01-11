@@ -1,1 +1,1 @@
-FROM elastic/filebeat
+FROM elastic/filebeat:8.5.3

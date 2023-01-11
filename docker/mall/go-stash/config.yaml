@@ -5,9 +5,9 @@ Clusters:
       Log:
         Mode: file
       Brokers:
-      - "127.0.0.1:9092"
+      - "broker1:9092"
       Topics: 
-      - log-collection
+      - mall-log
       Group: stash
       Conns: 3
       Consumers: 10
@@ -38,7 +38,7 @@ Clusters:
   Output:
     ElasticSearch:
       Hosts:
-      - "http://127.0.0.1:9200"
+      - "http://elasticsearch:9200"
       Index: "go-stash-{{yyyy.MM.dd}}"
       MaxChunkBytes: 5242880
       GracePeriod: 10s

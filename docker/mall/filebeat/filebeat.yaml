@@ -15,7 +15,7 @@ fields:
 # 输出到kafka
 output.kafka:
   hosts: ["127.0.0.1:9092"]
-  topic: '%{[fields.log_topic]}'
+  topic: 'mall-log'
   partition.round_robin:
     reachable_only: false
   required_acks: 1

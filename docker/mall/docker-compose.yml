@@ -295,7 +295,6 @@ services:
     environment:
       - TZ=${TZ}
     entrypoint:
-      - TZ=${TZ}    
       - "/app/dtm/dtm"
       - "-c=/app/dtm/configs/config.yaml"
     privileged: true
@@ -338,7 +337,6 @@ services:
       - zk1
     networks:
       - backend
-      - TZ=${TZ}      
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_ZOOKEEPER_CONNECT=zk1:2181
@@ -362,4 +360,53 @@ services:
     networks:
       - backend
     depends_on:
+      - broker1
+
+  elasticsearch:
+    build: ./elasticsearch
+    container_name: elasticsearch
+    hostname: elasticsearch
+    environment:
+      - "cluster.name=elasticsearch" #设置集群名称为elasticsearch
+      - "discovery.type=single-node" #以单一节点模式启动
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" #设置使用jvm内存大小
+      - TZ=${TZ}
+    volumes:
+      - ./elasticsearch/plugins:/usr/share/elasticsearch/plugins #插件文件挂载
+      - ./elasticsearch/data:/usr/share/elasticsearch/data #数据文件挂载
+    ports:
+      - 49200:9200
+      - 49300:9300
+    networks:
+      - backend
+
+
+  kibana:
+    build: ./kibana
+    hostname: kibana
+    container_name: kibana
+    links:
+      - elasticsearch:es #可以用es这个域名访问elasticsearch服务
+    depends_on:
+      - elasticsearch #kibana在elasticsearch启动之后再启动
+    networks:
+      - backend
+    environment:
+      - "elasticsearch.hosts=http://es:9200" #设置访问elasticsearch的地址
+      - TZ=${TZ}
+    ports:
+      - 45601:5601
+
+  go-stash:
+    build: ./go-stash
+    container_name: go-stash
+    hostname: go-stash
+    volumes:
+      - ./go-stash/config.yaml:/app/etc/config.yaml
+    environment:
+      - TZ=${TZ}
+    networks:
+      - backend
+    depends_on:
+      - elasticsearch
       - broker1
