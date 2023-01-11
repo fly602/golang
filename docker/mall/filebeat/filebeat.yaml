@@ -11,11 +11,11 @@ setup.template.settings:
   index.number_of_shards: 1
 # 定义kafka topic field
 fields:
-  log_topic: log-collection
+  log_topic: mall-log
 # 输出到kafka
 output.kafka:
   hosts: ["broker1:9092"]
-  topic: 'mall-log'
+  topic: '%{[fields.log_topic]}'
   partition.round_robin:
     reachable_only: false
   required_acks: 1
