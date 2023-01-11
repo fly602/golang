@@ -54,6 +54,7 @@ services:
   broker1:
     image: bitnami/kafka:latest
     container_name: broker1
+    user: root
     ports:
       - "9192:9092"
     # 依赖zookeeper启动
@@ -76,6 +77,7 @@ services:
   broker2:
     image: bitnami/kafka:latest
     container_name: broker2
+    user: root
     ports:
       - "9292:9092"
     # 依赖zookeeper启动
@@ -98,6 +100,7 @@ services:
   broker3:
     image: bitnami/kafka:latest
     container_name: broker3
+    user: root
     ports:
       - "9392:9092"
     # 依赖zookeeper启动
@@ -120,6 +123,7 @@ services:
   broker4:
     image: bitnami/kafka:latest
     container_name: broker4
+    user: root
     ports:
       - "9492:9092"
     # 依赖zookeeper启动
