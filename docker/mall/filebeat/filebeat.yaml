@@ -14,7 +14,7 @@ fields:
   log_topic: log-collection
 # 输出到kafka
 output.kafka:
-  hosts: ["127.0.0.1:9092"]
+  hosts: ["broker1:9092"]
   topic: 'mall-log'
   partition.round_robin:
     reachable_only: false
