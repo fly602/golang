@@ -322,40 +322,141 @@ services:
       - ./zookeeper/zk1/datalog:/datalog
     environment:
       - ZOO_MY_ID=1
-      - ZOO_SERVERS=server.1=zk1:2888:3888;2181
-      - TZ=${TZ}      
+      - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+
+  zk2:
+    build: ./zookeeper
+    hostname: zk2
+    ports:
+      - "21822:2182"
+      - "21812:2181"
+    container_name: zk2
+    networks:
+      - backend
+    volumes:
+      - ./zookeeper/zk2/data:/data
+      - ./zookeeper/zk2/datalog:/datalog
+    environment:
+      - ZOO_MY_ID=2
+      - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+
+  zk3:
+    build: ./zookeeper
+    hostname: zk3
+    ports:
+      - "21823:2182"
+      - "21813:2181"
+    container_name: zk3
+    networks:
+      - backend
+    volumes:
+      - ./zookeeper/zk3/data:/data
+      - ./zookeeper/zk3/datalog:/datalog
+    environment:
+      - ZOO_MY_ID=3
+      - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
 
   # 配置kafka中间件
   broker1:
     build: ./kafka
-    hostname: broker1
     container_name: broker1
+    user: root
     ports:
       - "9192:9092"
     # 依赖zookeeper启动
     depends_on:
       - zk1
+      - zk2
+      - zk3
     networks:
       - backend
     environment:
       - KAFKA_BROKER_ID=1
-      - KAFKA_ZOOKEEPER_CONNECT=zk1:2181
+      - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.191:9192
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.5:9192
     volumes:
-      - ./kafka/broker1:/bitnami/kafka
+      - ./kafka/broker1/kafka:/bitnami/kafka
       - /var/run/docker.sock:/var/run/docker.sock
+
+  broker2:
+    build: ./kafka
+    container_name: broker2
+    user: root
+    ports:
+      - "9292:9092"
+    # 依赖zookeeper启动
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+    networks:
+      - backend
+    environment:
+      - KAFKA_BROKER_ID=2
+      - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.5:9292
+    volumes:
+      - ./kafka/broker2/kafka:/bitnami/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  broker3:
+    build: ./kafka
+    container_name: broker3
+    user: root
+    ports:
+      - "9392:9092"
+    # 依赖zookeeper启动
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+    networks:
+      - backend
+    environment:
+      - KAFKA_BROKER_ID=3
+      - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.5:9392
+    volumes:
+      - ./kafka/broker3/kafka:/bitnami/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+
+
+  kafka-manager:
+    image: sheepkiller/kafka-manager:latest
+    container_name: kafka-manager
+    hostname: kafka-manager
+    ports: 
+      - "9010:9000"
+    links:
+      - broker1
+      - broker2
+      - broker3
+    external_links:
+      - zk1
+      - zk2
+      - zk3
+    environment:
+      - ZK_HOSTS=zk1:2181,zk2:2181,zk3:2181
+      - TZ=CST-8
+    networks:
+      - backend
+
 
   filebeat:
     build: ./filebeat
     container_name: filebeat
     hostname: filebeat
+    user: root
     environment:
       - TZ=${TZ}
-    user: root
     volumes:
-      - ./filebeat/filebeat.yaml:/usr/share/filebeat/filebeat.yaml
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
       - /var/lib/docker/containers:/var/lib/docker/containers
     networks:
       - backend
@@ -366,6 +467,7 @@ services:
     build: ./elasticsearch
     container_name: elasticsearch
     hostname: elasticsearch
+    user: root
     environment:
       - "cluster.name=elasticsearch" #设置集群名称为elasticsearch
       - "discovery.type=single-node" #以单一节点模式启动

@@ -1,0 +1,26 @@
+logging.level: debug
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+filebeat.inputs:
+- type: log
+  enabled: true
+  # 日志文件路径
+  paths:
+    - /var/lib/docker/containers/*/*-json.log
+# 定义kafka topic field
+fields:
+  log_topic: mall-log
+# 输出到kafka
+output.kafka:
+  hosts: ["broker1:9092","broker2:9092","broker3:9092"]
+  topic: mall-log
+# # ================================= Processors =================================
+# processors:
+#   - decode_json_fields:
+#       fields: ['@timestamp','level','content','trace','span','duration']
+#       target: ""
