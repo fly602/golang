@@ -22,6 +22,7 @@ services:
     working_dir: /usr/src/go-community
     networks:
       - backend
+    restart: always
 
   etcd1:
     image: bitnami/etcd
@@ -43,7 +44,8 @@ services:
       - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster             # 在启动期间用于 etcd 集群的初始化集群记号
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380 # 为启动初始化集群配置
       - ETCD_INITIAL_CLUSTER_STATE=new                      # 初始化集群状态
-  
+    restart: always
+
   etcd2:
     image: bitnami/etcd
     container_name: etcd2
@@ -64,6 +66,7 @@ services:
       - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster             # 在启动期间用于 etcd 集群的初始化集群记号
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380 # 为启动初始化集群配置
       - ETCD_INITIAL_CLUSTER_STATE=new                      # 初始化集群状态
+    restart: always
 
   etcd3:
     image: bitnami/etcd
@@ -85,6 +88,7 @@ services:
       - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster             # 在启动期间用于 etcd 集群的初始化集群记号
       - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380 # 为启动初始化集群配置
       - ETCD_INITIAL_CLUSTER_STATE=new                      # 初始化集群状态
+    restart: always
 
   etcd_web:
     image: evildecay/etcdkeeper
@@ -103,6 +107,7 @@ services:
       - HOST=etcd_web
     ports:
       - "8091:8080"
+    restart: always
 
   db:
     build: ./mysql
@@ -118,6 +123,7 @@ services:
       - ./mysql/data:/var/lib/mysql
     networks:
       - backend
+    restart: always
     
   cache:
     build: ./redis
@@ -133,6 +139,7 @@ services:
     command: /bin/bash -c "redis-server /etc/redis/redis.conf"
     networks:
       - backend
+    restart: always
 
   userrpc:
     build: ./user/rpc
@@ -146,6 +153,7 @@ services:
       - "9000:9000"
     networks:
       - backend
+    restart: always
 
   userapi:
     build: ./user/api
@@ -161,6 +169,7 @@ services:
       - "8000:8000"
     networks:
       - backend
+    restart: always
 
   productrpc:
     build: ./product/rpc
@@ -174,6 +183,7 @@ services:
       - "9001:9001"
     networks:
       - backend
+    restart: always
 
   productapi:
     build: ./product/api
@@ -189,6 +199,7 @@ services:
       - "8001:8001"
     networks:
       - backend
+    restart: always
     
   orderrpc:
     build: ./order/rpc
@@ -204,6 +215,7 @@ services:
       - "9002:9002"
     networks:
       - backend
+    restart: always
 
   orderapi:
     build: ./order/api
@@ -219,6 +231,7 @@ services:
       - "8002:8002"
     networks:
       - backend
+    restart: always
 
   payrpc:
     build: ./pay/rpc
@@ -234,6 +247,7 @@ services:
       - "9003:9003"
     networks:
       - backend
+    restart: always
 
   payapi:
     build: ./pay/api
@@ -249,7 +263,8 @@ services:
       - "8003:8003"
     networks:
       - backend
-  
+    restart: always
+ 
   prometheus:
     build: ./prometheus
     container_name: "prometheus"
@@ -322,6 +337,7 @@ services:
       - TZ=${TZ}
       - ZOO_MY_ID=1
       - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+    restart: always
 
   zk2:
     build: ./zookeeper
@@ -339,6 +355,7 @@ services:
       - TZ=${TZ}
       - ZOO_MY_ID=2
       - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+    restart: always
 
   zk3:
     build: ./zookeeper
@@ -356,6 +373,7 @@ services:
       - TZ=${TZ}
       - ZOO_MY_ID=3
       - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
+    restart: always
 
   # 配置kafka中间件
   broker1:
@@ -381,6 +399,7 @@ services:
     volumes:
       - ./kafka/broker1/kafka:/bitnami/kafka
       - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
 
   broker2:
     build: ./kafka
@@ -405,6 +424,7 @@ services:
     volumes:
       - ./kafka/broker2/kafka:/bitnami/kafka
       - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
 
   broker3:
     build: ./kafka
@@ -429,6 +449,7 @@ services:
     volumes:
       - ./kafka/broker3/kafka:/bitnami/kafka
       - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
 
 
   kafka-manager:
@@ -450,6 +471,7 @@ services:
       - TZ=${TZ}
     networks:
       - backend
+    restart: always
 
 
   filebeat:
@@ -466,6 +488,7 @@ services:
       - backend
     depends_on:
       - broker1
+    restart: always
 
   elasticsearch:
     build: ./elasticsearch
@@ -485,6 +508,7 @@ services:
       - 49300:9300
     networks:
       - backend
+    restart: always
 
 
   kibana:
@@ -502,6 +526,7 @@ services:
       - TZ=${TZ}
     ports:
       - 45601:5601
+    restart: always
 
   go-stash:
     build: ./go-stash
@@ -516,3 +541,4 @@ services:
     depends_on:
       - elasticsearch
       - broker1
+    restart: always
