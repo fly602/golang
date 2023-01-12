@@ -64,5 +64,8 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm /var/log/lastlog /var/log/faillog
 
+RUN mkdir -p /opt/mall && \
+    chown -R normal /opt/mall/
+
 # 设置工作目录
 WORKDIR /usr/src/

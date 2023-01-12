@@ -1,12 +1,9 @@
 FROM go1.18
 
-USER root
+COPY ./etc /opt/mall/user/rpc/etc/
+COPY userrpc /opt/mall/user/rpc/bin/
 
-COPY ./etc /opt/userrpc/etc/
-COPY userrpc /opt/userrpc/bin/
-RUN chown -R normal /opt/userrpc
-
-WORKDIR /opt/userrpc
+WORKDIR /opt/mall/user/rpc
 
 USER normal
 

@@ -1,11 +1,11 @@
 Name: user.rpc
 ListenOn: 0.0.0.0:9000
-Log:
-  ServiceName: userrpc
-  Mode: file
-  Encoding: json
-  Path: /opt/userrpc/log
-  Level: debug
+# Log:
+#   ServiceName: userrpc
+#   Mode: file
+#   Encoding: json
+#   Path: /opt/mall/userrpc/log
+#   Level: debug
 
 Etcd:
   Hosts:
