@@ -27,15 +27,13 @@ services:
     image: bitnami/etcd
     container_name: etcd1
     hostname: etcd1
-    volumes:
-      - /home/uos/dde-go/src:/usr/src
     networks:
       - backend
     ports:
       - "23791:2379"
       - "23801:2380"
     environment:
-      - TZ:${TZ}
+      - TZ=${TZ}
       - ALLOW_NONE_AUTHENTICATION=yes
       - ETCD_NAME=etcd1
       - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd1:2380
@@ -321,6 +319,7 @@ services:
       - ./zookeeper/zk1/data:/data
       - ./zookeeper/zk1/datalog:/datalog
     environment:
+      - TZ=${TZ}
       - ZOO_MY_ID=1
       - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
 
@@ -337,6 +336,7 @@ services:
       - ./zookeeper/zk2/data:/data
       - ./zookeeper/zk2/datalog:/datalog
     environment:
+      - TZ=${TZ}
       - ZOO_MY_ID=2
       - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
 
@@ -353,6 +353,7 @@ services:
       - ./zookeeper/zk3/data:/data
       - ./zookeeper/zk3/datalog:/datalog
     environment:
+      - TZ=${TZ}
       - ZOO_MY_ID=3
       - ZOO_SERVERS=server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181
 
@@ -371,11 +372,12 @@ services:
     networks:
       - backend
     environment:
+      - TZ=${TZ}
       - KAFKA_BROKER_ID=1
       - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.5:9192
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${KAFKA_ADVERTISED_LISTENERS_IP}:9192
     volumes:
       - ./kafka/broker1/kafka:/bitnami/kafka
       - /var/run/docker.sock:/var/run/docker.sock
@@ -398,7 +400,8 @@ services:
       - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.5:9292
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${KAFKA_ADVERTISED_LISTENERS_IP}:9292
+      - TZ=${TZ}
     volumes:
       - ./kafka/broker2/kafka:/bitnami/kafka
       - /var/run/docker.sock:/var/run/docker.sock
@@ -421,7 +424,8 @@ services:
       - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.3.5:9392
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${KAFKA_ADVERTISED_LISTENERS_IP}:9392
+      - TZ=${TZ}
     volumes:
       - ./kafka/broker3/kafka:/bitnami/kafka
       - /var/run/docker.sock:/var/run/docker.sock
@@ -443,7 +447,7 @@ services:
       - zk3
     environment:
       - ZK_HOSTS=zk1:2181,zk2:2181,zk3:2181
-      - TZ=CST-8
+      - TZ=${TZ}
     networks:
       - backend
 
