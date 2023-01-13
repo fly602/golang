@@ -1,14 +1,12 @@
 FROM go1.18
 
-USER root
+WORKDIR /opt/mall/pay/rpc
 
-COPY ./etc /etc/
-COPY payrpc /usr/bin
-
-WORKDIR /usr/bin/
+COPY ./etc etc/
+COPY payrpc bin/
 
 EXPOSE 9003
 
 USER normal
 
-ENTRYPOINT ["/usr/bin/payrpc", "-f","/etc/pay.yaml"]
+ENTRYPOINT ["bin/payrpc", "-f","etc/pay.yaml"]

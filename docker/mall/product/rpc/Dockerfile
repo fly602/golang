@@ -1,14 +1,12 @@
 FROM go1.18
 
-USER root
+WORKDIR /opt/mall/product/rpc
 
-COPY ./etc /etc/
-COPY productrpc /usr/bin
-
-WORKDIR /usr/bin/
+COPY ./etc etc/
+COPY productrpc bin/
 
 EXPOSE 9001
 
 USER normal
 
-ENTRYPOINT ["/usr/bin/productrpc", "-f","/etc/product.yaml"]
+ENTRYPOINT ["bin/productrpc", "-f","etc/product.yaml"]

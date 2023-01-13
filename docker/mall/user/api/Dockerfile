@@ -1,14 +1,12 @@
 FROM go1.18
 
-USER root
+WORKDIR /opt/mall/user/api
 
-COPY ./etc /etc/
-COPY userapi /usr/bin
-
-WORKDIR /usr/bin/
+COPY ./etc etc/
+COPY userapi bin/
 
 EXPOSE 8000
 
 USER normal
 
-ENTRYPOINT ["/usr/bin/userapi", "-f","/etc/user.yaml"]
+ENTRYPOINT ["bin/userapi", "-f","etc/user.yaml"]

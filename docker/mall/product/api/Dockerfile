@@ -1,14 +1,12 @@
 FROM go1.18
 
-USER root
+WORKDIR /opt/mall/product/api
 
-COPY ./etc /etc/
-COPY productapi /usr/bin
-
-WORKDIR /usr/bin/
+COPY ./etc etc/
+COPY productapi bin/
 
 EXPOSE 8001
 
 USER normal
 
-ENTRYPOINT ["/usr/bin/productapi", "-f","/etc/product.yaml"]
+ENTRYPOINT ["bin/productapi", "-f","etc/product.yaml"]

@@ -1,16 +1,12 @@
 FROM go1.18
 
-USER root
+WORKDIR /opt/mall/order/api
 
-COPY ./etc /etc/
-COPY orderapi /usr/bin
-
-WORKDIR /usr/bin/
-
-# RUN apk add tzdata
+COPY ./etc etc/
+COPY orderapi bin/
 
 EXPOSE 8002
 
 USER normal
 
-ENTRYPOINT ["/usr/bin/orderapi", "-f","/etc/order.yaml"]
+ENTRYPOINT ["bin/orderapi", "-f","etc/order.yaml"]

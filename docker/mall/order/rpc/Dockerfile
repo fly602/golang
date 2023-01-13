@@ -1,16 +1,12 @@
 FROM go1.18
 
-USER root
+WORKDIR /opt/mall/order/rpc
 
-COPY ./etc /etc/
-COPY orderrpc /usr/bin
-
-WORKDIR /usr/bin/
-
-# RUN apk add tzdata
+COPY ./etc etc/
+COPY orderrpc bin/
 
 EXPOSE 9002
 
 USER normal
 
-ENTRYPOINT ["/usr/bin/orderrpc", "-f","/etc/order.yaml"]
+ENTRYPOINT ["bin/orderrpc", "-f","etc/order.yaml"]
