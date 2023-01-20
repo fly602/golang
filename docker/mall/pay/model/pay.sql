@@ -1,4 +1,8 @@
-CREATE TABLE `pay` (
+CREATE DATABASE IF NOT EXISTS `mall`;
+
+USE `mall`;
+
+CREATE TABLE IF NOT EXISTS `pay` (
 	`id` bigint unsigned NOT NULL AUTO_INCREMENT,
 	`uid` bigint unsigned NOT NULL DEFAULT '0' COMMENT '用户ID',
 	`oid` bigint unsigned NOT NULL DEFAULT '0' COMMENT '订单ID',

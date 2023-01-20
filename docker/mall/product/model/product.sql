@@ -1,4 +1,8 @@
-CREATE TABLE `product` (
+CREATE DATABASE IF NOT EXISTS `mall`;
+
+USE `mall`;
+
+CREATE TABLE IF NOT EXISTS `product` (
 	`id` bigint unsigned NOT NULL AUTO_INCREMENT,
 	`name` varchar(255)  NOT NULL DEFAULT '' COMMENT '产品名称',
 	`desc` varchar(255)  NOT NULL DEFAULT '' COMMENT '产品描述',

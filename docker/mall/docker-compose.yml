@@ -121,6 +121,10 @@ services:
     volumes:
       - ./mysql/conf:/etc/mysql/conf.d
       - ./mysql/data:/var/lib/mysql
+      - ./user/model/user.sql:/docker-entrypoint-initdb.d/user.sql
+      - ./product/model/product.sql:/docker-entrypoint-initdb.d/product.sql
+      - ./order/model/order.sql:/docker-entrypoint-initdb.d/order.sql
+      - ./pay/model/pay.sql:/docker-entrypoint-initdb.d/pay.sql
     networks:
       - backend
     restart: always
