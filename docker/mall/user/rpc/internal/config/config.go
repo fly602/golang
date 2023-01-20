@@ -13,5 +13,12 @@ type Config struct {
 
 	CacheRedis cache.CacheConf
 
+	Tokens []RedisKV
+
 	Salt string
+}
+
+type RedisKV struct {
+	Key   string
+	Value string
 }

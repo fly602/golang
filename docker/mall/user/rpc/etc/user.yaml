@@ -32,6 +32,15 @@ Redis:                   # 指定 Redis 服务
   Type: node
   Pass:
 
+# Auth验证Token
+Tokens:
+- Key: userapi
+  Value: 6jKNZbEpYGeUMAifz10gOnmoty3TV
+- Key: orderrpc
+  Value: ashfjkaHJKaHJKHFalshjdlaHLKHa
+- Key: payrpc
+  Value: klfwivnjwkHUBopqOJNLBwPJUOIeC
+
 Prometheus:
   Host: 0.0.0.0
   Port: 9090
