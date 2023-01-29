@@ -1,1 +1,0 @@
-FROM kevinwan/go-stash
