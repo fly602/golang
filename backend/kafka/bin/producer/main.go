@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go-community/kafka/kafka"
+	"go-community/backend/kafka/kafka"
 	"log"
 
 	"github.com/Shopify/sarama"

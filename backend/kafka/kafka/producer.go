@@ -1,7 +1,7 @@
 package kafka
 
 import (
-	"go-community/kafka/pool"
+	"go-community/backend/kafka/pool"
 	"log"
 	"time"
 
