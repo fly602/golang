@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-community/kafka/kafka"
+	"go-community/backend/kafka/kafka"
 	"log"
 	"os"
 	"os/signal"
