@@ -1,0 +1,10 @@
+#!/bin/bash
+
+overridePath=/usr/share/glib-2.0/schemas
+overrideFile=99_dde_resolution-config.gschema.override
+
+if [ -f $overridePath/$overrideFile ];then
+    rm -rf $overridePath/$overrideFile
+    sync
+    glib-compile-schemas /usr/share/glib-2.0/schemas
+fi

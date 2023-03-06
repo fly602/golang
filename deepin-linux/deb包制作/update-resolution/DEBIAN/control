@@ -1,0 +1,11 @@
+Package: update-resolution
+Version: 1.0.0-1
+Architecture: all
+Maintainer: Deepin Packages Builder <packages@deepin.com>
+Depends: 
+Section: admin
+Priority: optional
+Homepage: http://www.deepin.org
+Description: update default resolution config. 
+ This package will update gsetting config com.deepin.dde.control-center "resolution-config '800*768' ".
+ 

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+overridePath=/usr/share/glib-2.0/schemas
+overrideFile=99_dde_resolution-config.gschema.override
+
+cat  > $overridePath/$overrideFile <<EOF
+[com.deepin.dde.control-center]
+resolution-config='800*768'
+EOF
+sync
+glib-compile-schemas /usr/share/glib-2.0/schemas
