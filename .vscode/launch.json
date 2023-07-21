@@ -1,0 +1,30 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) g_main_loop",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/glib/glib-main/glib_main",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/glib/glib-main",
+            "environment": [
+                {
+                    "name": "G_MESSAGES_DEBUG",
+                    "value": "all"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "preLaunchTask": "glib-object-make",
+            "sourceFileMap": {
+                "./debian/build/deb/../../../": "/home/uos/dde-go/src/github.com/linuxdeepin/glib2.0/"
+            }
+        },
+    ]
+}

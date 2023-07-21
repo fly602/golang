@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "gio.h": "c",
+        "giotypes.h": "c",
+        "gioenums.h": "c",
+        "glib-object.h": "c",
+        "gsourceclosure.h": "c",
+        "gparamspecs.h": "c",
+        "gbinding.h": "c",
+        "glib.h": "c",
+        "gasyncqueue.h": "c",
+        "galloca.h": "c",
+        "gtypes.h": "c",
+        "dbus_obj.h": "c",
+        "base_obj.h": "c",
+        "stdio.h": "c"
+    }
+}

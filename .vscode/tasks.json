@@ -1,0 +1,22 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "glib-object-make",
+            "command": "cd glib/glib-main && make",
+            "problemMatcher": [],
+            "group": "build",
+            "dependsOn": [
+                "glib-object-make-clean"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "glib-object-make-clean",
+            "command": "cd glib/glib-main && make clean",
+            "problemMatcher": [],
+            "group": "build"
+        }
+    ],
+    "version": "2.0.0"
+}

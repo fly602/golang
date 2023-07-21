@@ -3,7 +3,6 @@ vendor
 go.mod
 go.sum
 
-.vscode
 .idea
 
 broker*
