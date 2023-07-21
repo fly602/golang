@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <gio/gio.h>
 #include "base_obj.h"
+#include "glib_micros.h"
 
 typedef struct _DbusObj DbusObj;
 typedef struct _DbusObjClass DbusObjClass;
@@ -33,12 +34,10 @@ GType dbus_obj_get_type (void);
 DbusObj *dbus_obj_new();
 
 static void finalize (GObject *object);
+static void dispose(GObject *object);
 
 static GObject* constructor(GType type,guint n_construct_properties, GObjectConstructParam *construct_properties);
 
 static void dbus_hello (void);
-
-#define g_log(log_domain,log_level,format, ...) \
-    g_log(log_domain, log_level, "%s:%d: " format, __FILE__, __LINE__, ##__VA_ARGS__)
 
 #endif

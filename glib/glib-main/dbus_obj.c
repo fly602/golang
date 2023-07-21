@@ -26,6 +26,7 @@ static void dbus_obj_class_init (DbusObjClass *klass)
     g_log(domain, G_LOG_LEVEL_INFO, "dbus obj class init!");
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
     object_class->finalize = finalize;
+    object_class->dispose = dispose;
     object_class->constructor = constructor;
 
     // override base_hello
@@ -41,6 +42,11 @@ static void dbus_hello (void)
 static void finalize (GObject *object)
 {
     g_log(domain, G_LOG_LEVEL_INFO, "dbus obj class finalize!");
+}
+
+static void dispose(GObject *object)
+{
+    g_log(domain, G_LOG_LEVEL_INFO, "dbus obj class dispose!");
 }
 
 static GObject* constructor(GType type,guint n_construct_properties, GObjectConstructParam *construct_properties)

@@ -43,15 +43,40 @@ int main(){
     BaseObj *base =  base_obj_new();
     g_log(domain, G_LOG_LEVEL_INFO, "base is dbus? %s!",OBJ_IS_DBUS(base)?"true":"false");
 
+    // 获取base类对象
+    BaseObjClass *base_class =  BASE_OBJ_GET_CLASS(base);
+    // 验证base_class是否是base类对象
+    g_log(domain, G_LOG_LEVEL_INFO, "base_class is base class? %s!",CLASS_IS_BASE_CLASS(base_class)?"true":"false");
+    // 验证base_class是否是dbus类对象
+    g_log(domain, G_LOG_LEVEL_INFO, "base_class is dbus class? %s!",CLASS_IS_DBUS_CLASS(base_class)?"true":"false");
+
+    base_obj_print_priv(base);
+    // 释放资源
     g_object_unref(base);
 
 
     // 创建dbus_obj
     DbusObj *dbus = dbus_obj_new();
+    // 验证dbus是否是base对象
     g_log(domain, G_LOG_LEVEL_INFO, "dbus is base? %s!",OBJ_IS_BASE(dbus)?"true":"false");
+
+    // 获取dbus类对象
     DbusObjClass *dbus_class = DBUS_OBJ_GET_CLASS(dbus);
+    g_log(domain, G_LOG_LEVEL_INFO, "dbus_class is base class? %s!",CLASS_IS_BASE_CLASS(dbus_class)?"true":"false");
+
+    // 将dbus类对象 类型转换成 base类对象
     BaseObjClass *base_dbus_class = BASE_OBJ_CLASS(dbus_class);
+
+    // 执行base类对象的方法
     base_dbus_class->base_hello();
+
+    // 增加dbus的引用计数
+    gpointer p1 = g_object_ref(dbus);
+
+    // 释放资源
     g_object_unref(dbus);
+    g_object_unref(p1);
+
+
     g_main_loop_run (loop);
 }
