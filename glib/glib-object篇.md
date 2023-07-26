@@ -87,6 +87,7 @@ GObject基于一种称为"基于类的对象模型"的设计范式。每个对�
 GObject基本类和基础对象是GObjectClass和GObject，新的类型和对象大多数都是基于这个类和对象派生出来的。
 
 1.  GObjectClass结构体的介绍
+
     在了解GObject是怎么运作之前，还要认识一下GObjectClass，它的结构体原形是struct _GObjectClass，它是GObject的类结构体，也是GObject继承的基础。_GObjectClass 结构体中包含了一组函数指针，这些函数定义了在实例化 GObject 类型对象时的行为。这些函数指针包括构造函数 (constructor)、析构函数 (destructor)、对象属性的设置和获取函数、信号处理函数等。
 
     ```
@@ -209,6 +210,7 @@ GObject基本类和基础对象是GObjectClass和GObject，新的类型和对象
         -   描述: 填充字段，仅用于对齐结构体成员。
 
 2.  GObject结构体的介绍
+
     GObject内部结构是struct _GObject，它是GObject这个库的基础结构。_GObject的内部结构如下: 
     ```
     struct  _GObject
