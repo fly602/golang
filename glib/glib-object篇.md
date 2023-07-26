@@ -90,7 +90,7 @@ GObject基本类和基础对象是GObjectClass和GObject，新的类型和对象
 
     在了解GObject是怎么运作之前，还要认识一下GObjectClass，它的结构体原形是struct _GObjectClass，它是GObject的类结构体，也是GObject继承的基础。_GObjectClass 结构体中包含了一组函数指针，这些函数定义了在实例化 GObject 类型对象时的行为。这些函数指针包括构造函数 (constructor)、析构函数 (destructor)、对象属性的设置和获取函数、信号处理函数等。
 
-    ```
+    ```c
     struct  _GObjectClass
     {
     GTypeClass   g_type_class;
@@ -212,7 +212,7 @@ GObject基本类和基础对象是GObjectClass和GObject，新的类型和对象
 2.  GObject结构体的介绍
 
     GObject内部结构是struct _GObject，它是GObject这个库的基础结构。_GObject的内部结构如下: 
-    ```
+    ```c
     struct  _GObject
     {
     GTypeInstance  g_type_instance;
@@ -243,7 +243,7 @@ GObject基本类和基础对象是GObjectClass和GObject，新的类型和对象
 1.  **G_DEFINE_TYPE**: GLib 中用于简化 GObject 类型定义的宏。它是一个宏模板，定义了一个用于创建 GObject 类型的标准化流程，包括类型注册、类结构体定义和类初始化函数。
 
     函数原形: 
-    ```
+    ```c
     G_DEFINE_TYPE (Type, type_name, PARENT_TYPE)
     ```
     参数说明: 
@@ -537,6 +537,8 @@ GObject基本类和基础对象是GObjectClass和GObject，新的类型和对象
 GObject支持继承和多态，允许通过派生类扩展已有的类。这种机制可以减少代码重复，并提供更高级的抽象和封装。通过继承，子类可以重写或添加新的方法，从而实现特定的行为。
 
 在前面的例子中其实已经实现了继承，再来看看多态是怎么实现的:
+
+代码示例【[完整代码示例](./glib-main/dbus_obj.c)】:
 ```c
     // 基类baseclass中包含了一个虚函数base_hello，然后在子类继承的时候重写
     struct _BaseObjClass
@@ -597,7 +599,7 @@ GObject支持继承和多态，允许通过派生类扩展已有的类。这种�
 GParamSpec 结构体定义了属性的各种属性，例如名称、类型、默认值、范围等。GParamSpec 用于定义和管理 GObject 的属性系统。它的内部结构是GParamSpec。
 
 结构体原形如下: 
-```
+```c
 struct _GParamSpec
 {
   GTypeInstance  g_type_instance;
@@ -665,8 +667,9 @@ struct _GParamSpec
 
 2.  GParamSpec的安装
     1.  **g_param_spec_*type*** : 用于创建type类型的属性参数。返回的是GParamSpec的指针。一般用于GObject类构造的时候，常用的类型都有对应的函数添加属性。
+
         代码示例【[完整代码示例](./glib-main/base_obj.c)】: 
-        ```
+        ```c
         // 添加字符串类型的属性
         obj_properties[PROP_TYPE_STRING] = 
             g_param_spec_string(
@@ -714,7 +717,8 @@ struct _GParamSpec
             -   n_pspecs: 属性参数的数量。
             -   pspecs: 一个指向属性参数（GParamSpec）指针的数组。
 
-        ```
+        代码示例【[完整代码示例](./glib-main/base_obj.c)】:
+        ```c
         g_object_class_install_properties(klass,_PROPERTY_ENUMS_LAST,obj_properties);
         ```
     
@@ -726,7 +730,8 @@ struct _GParamSpec
             -   property_id: 属性的唯一标识符，类型为guint（无符号整数）。
             -   pspecs: 指向GParamSpec结构的指针，描述了要安装的属性的详细信息。
 
-        ```
+        代码示例【[完整代码示例](./glib-main/base_obj.c)】:
+        ```c
         g_object_class_install_property(klass,PROP_TYPE_STRING,obj_properties[PROP_TYPE_STRING]);
         g_object_class_install_property(klass,PROP_TYPE_INT,obj_properties[PROP_TYPE_INT]);
         g_object_class_install_property(klass,PROP_TYPE_POINTER,obj_properties[PROP_TYPE_POINTER]);
@@ -744,6 +749,7 @@ struct _GParamSpec
             -   first_property_name: 第一个属性的名称，类型为const gchar *。该函数可以接受多个属性名称和对应的属性值。
             -   ...: 属性名称和对应的属性值,在设置最后一个参数的值后，还需要加上NULL，不然g_object_set遍历参数的时候会报错。
 
+        代码示例【[完整代码示例](./glib-main/base_obj.c)】:
         ```c
         // 设置int类型属性的值
         // g_object_set(G_OBJECT(obj),BASE_PROP_INT,89,NULL);
@@ -839,6 +845,7 @@ struct _GParamSpec
     -   n_params: 信号的参数数量。
     -   ... : 信号的参数列表。
 
+    代码示例【[完整代码示例](./glib-main/base_obj.c)】:
     ```c
     // 添加信号
     g_signal_new(
@@ -866,6 +873,7 @@ struct _GParamSpec
     -   c_handler: 指向回调函数的指针。
     -   data: 传递给回调函数的用户数据。
 
+    代码示例【[完整代码示例](./glib-main/base_obj.c)】:
     ```c
     // 连接信号处理函数
     static void base_signal_prop_changed(BaseObj *obj, int value, gpointer user_data) {
@@ -921,6 +929,8 @@ struct _GParamSpec
         -   signal_id: 信号的id，即g_signal_new的返回值。
         -   detail: 表示信号的详细信息，可以使用 g_quark_from_static_string 函数将字符串转换为 GQuark 类型。
         -   ... : 可变参数，用于传递信号的参数。
+    
+    代码示例【[完整代码示例](./glib-main/base_obj.c)】:
     ```c
     static void set_property(GObject *object,guint  property_id,const GValue   *value,GParamSpec    *pspec)
     {
@@ -945,6 +955,8 @@ struct _GParamSpec
         -   instance: 指向对象的指针。
         -   detailed_signal: 表示要发送的信号的名称和详细说明，格式为"signal-name::detail"。例如，"clicked"是GtkButton的一个常见信号，"clicked::right-button"表示右键点击事件。
         -   ... : 可变参数，用于传递信号的参数。
+
+    代码示例【[完整代码示例](./glib-main/base_obj.c)】:
     ```c
     static void set_property(GObject *object,guint  property_id,const GValue   *value,GParamSpec    *pspec)
     {
