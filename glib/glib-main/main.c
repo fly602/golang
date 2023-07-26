@@ -67,7 +67,7 @@ int main(){
     g_log(domain, G_LOG_LEVEL_INFO, "dbus_class is base class? %s!",CLASS_IS_BASE_CLASS(dbus_class)?"true":"false");
 
     // 将dbus类对象 类型转换成 base类对象
-    BaseObjClass *base_dbus_class = BASE_OBJ_CLASS(dbus_class);
+    BaseObjClass *base_dbus_class = BASE_OBJ_GET_CLASS(dbus);
 
     // 执行base类对象的方法
     base_dbus_class->base_hello();

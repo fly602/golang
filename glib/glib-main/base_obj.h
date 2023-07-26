@@ -25,7 +25,6 @@ struct _BaseObjClass
     /* data */
     GObjectClass parent_class;
     void	     (*base_hello)		(void);
-
 };
 struct  _BaseObjPriv
 {

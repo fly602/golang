@@ -80,7 +80,162 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
 
 ## 二、GObject的使用
 
-### 1. GObject几个比较重要的宏
+### 1. 对象模型和类和对象
+
+GObject基于一种称为"基于类的对象模型"的设计范式。每个对象都是基于一个类创建的，类定义了对象的属性和方法。对象可以从类继承属性和方法，并且可以重写或扩展它们。类和对象是紧密相关且相互依赖的概念。类定义了一组属性、方法和信号，而对象是类的一个实例，它具有类定义的属性和方法。
+
+GObject基本类和基础对象是GObjectClass和GObject，新的类型和对象大多数都是基于这个类和对象派生出来的。
+
+1.  GObjectClass结构体的介绍
+    在了解GObject是怎么运作之前，还要认识一下GObjectClass，它的结构体原形是struct _GObjectClass，它是GObject的类结构体，也是GObject继承的基础。_GObjectClass 结构体中包含了一组函数指针，这些函数定义了在实例化 GObject 类型对象时的行为。这些函数指针包括构造函数 (constructor)、析构函数 (destructor)、对象属性的设置和获取函数、信号处理函数等。
+
+    ```
+    struct  _GObjectClass
+    {
+    GTypeClass   g_type_class;
+
+    /*< private >*/
+    GSList      *construct_properties;
+
+    /*< public >*/
+    /* seldom overidden */
+    GObject*   (*constructor)     (GType                  type,
+                                    guint                  n_construct_properties,
+                                    GObjectConstructParam *construct_properties);
+    /* overridable methods */
+    void       (*set_property)		(GObject        *object,
+                                            guint           property_id,
+                                            const GValue   *value,
+                                            GParamSpec     *pspec);
+    void       (*get_property)		(GObject        *object,
+                                            guint           property_id,
+                                            GValue         *value,
+                                            GParamSpec     *pspec);
+    void       (*dispose)			(GObject        *object);
+    void       (*finalize)		(GObject        *object);
+    /* seldom overidden */
+    void       (*dispatch_properties_changed) (GObject      *object,
+                            guint	   n_pspecs,
+                            GParamSpec  **pspecs);
+    /* signals */
+    void	     (*notify)			(GObject	*object,
+                        GParamSpec	*pspec);
+
+    /* called when done constructing */
+    void	     (*constructed)		(GObject	*object);
+
+    /*< private >*/
+    gsize		flags;
+
+    /* padding */
+    gpointer	pdummy[6];
+    };
+    ```
+
+    _GObjectClass结构体成员: 
+
+    1.  **g_type_class**:
+        -   类型: GTypeClass
+        -   描述: 用于存储 GObject 类的类型信息。GObject 类是 GObject 类型系统中的基本类型，g_type_class 可以用于访问或操作该类的类型信息。
+
+    2.  **construct_properties**:
+        -   类型: GSList *
+        -   描述: : 这是一个指向 GSList 的指针，GSList 是一个单链表结构，用于存储构造属性（construct properties）。构造属性是在创建对象时设置的属性，通常用于初始化对象的状态。通过 construct_properties 列表，可以将一组属性关联到对象的构造过程中。
+
+    3.  **constructor**:
+        -   类型: GObject* ()(GType, guint, GObjectConstructParam)
+        -   描述: 构造函数指针，用于实例化 GObject 类型的对象。
+        -   参数:
+            -   type: GObject 类型的 GType。
+            -   n_construct_properties: 构造函数需要的属性数量。
+            -   construct_properties: 构造函数需要的属性列表。
+        -   返回值: 新创建的 GObject 类型的对象的指针。
+
+    4.  **set_property**:
+        -   类型: void ()(GObject, guint, const GValue*, GParamSpec*)
+        -   描述: 设置对象属性的函数指针。
+        -   参数:
+            -   object: 要设置属性的 GObject 对象指针。
+            -   property_id: 属性的标识符。
+            -   value: 属性的值。
+            -   pspec: 属性的参数规范。
+
+    5.  **get_property**:
+        -   类型: void ()(GObject, guint, GValue*, GParamSpec*)
+        -   描述: 获取对象属性的函数指针。
+        -   参数:
+            -   object: 要获取属性值的 GObject 对象指针。
+            -   property_id: 属性的标识符。
+            -   value: 存储属性值的 GValue 结构体指针。
+            -   pspec: 属性的参数规范。
+
+    6.  **dispose**:
+        -   类型: void ()(GObject)
+        -   描述: dispose 方法用于释放对象所拥有的资源，但是并不销毁对象本身。通常在此方法中进行资源的清理、断开连接、解除订阅等操作。调用 g_object_unref() 函数时会自动调用 dispose 方法，但也可以手动调用该方法。
+
+    7.  **finalize**:
+        -   类型: void ()(GObject)
+        -   描述: finalize 方法是在对象的引用计数为0时自动调用的。它用于执行对象的最终化操作，例如释放内存、销毁相关的资源等。finalize 方法是 GObject 类的虚拟方法，可以在子类中对其进行重写以添加自定义的最终化逻辑。通过g_object_ref()可以增加引用计数。
+
+        >   dispose和finalize的区别: 
+        >   -   dispose 方法主要用于释放对象所拥有的资源，而不涉及对象自身的销毁。
+        >   -   finalize 方法用于对象的最终化操作，在对象被销毁之前执行，包括释放对象自身所占用的内存和资源。
+
+    8.  **dispatch_properties_changed**:
+        -   类型: void ()(GObject, guint, GParamSpec**)
+        -   描述: 在对象的属性发生改变时调用的函数指针。用于发送属性改变的信号。
+        -   参数:
+            -   object: 属性发生改变的 GObject 对象指针。
+            -   n_pspecs: 发生改变的属性数量。
+            -   pspecs: 发生改变的属性的参数规范数组。
+
+    9.  **notify**:
+        -   类型: void ()(GObject, GParamSpec*)
+        -   描述: 在对象的属性被修改时调用的函数指针。用于发送属性修改的信号。
+        -   参数:
+            -   object: 属性被修改的 GObject 对象指针。
+            -   pspec: 被修改的属性的参数规范。
+
+    10. **constructed**:
+        -   类型: void ()(GObject)
+        -   描述: 对象构造完成后调用的函数指针。可以在此函数中执行初始化操作或触发其他相关处理。
+
+    11. **flags**:
+        -   类型: gsize
+        -   描述: 该成员位域标志位，用于存储一些标志信息。可以使用该成员变量来存储与 GObject 类相关的标志或状态信息。它是一个私有成员，一般不做外部调用。
+        
+    12. **pdummy**:
+        -   类型: gpointer[6]
+        -   描述: 填充字段，仅用于对齐结构体成员。
+
+2.  GObject结构体的介绍
+    GObject内部结构是struct _GObject，它是GObject这个库的基础结构。_GObject的内部结构如下: 
+    ```
+    struct  _GObject
+    {
+    GTypeInstance  g_type_instance;
+    
+    /*< private >*/
+    volatile guint ref_count;
+    GData         *qdata;
+    };
+    ```
+    _GObject结构体成员: 
+
+    1.  **g_type_instance**:
+            -   类型: GTypeInstance
+            -   描述: 用于存储对象的类型信息和实例相关的数据。
+
+    2.  **ref_count**:
+        -   类型: volatile guint
+        -   描述: 私有成员。用于表示对象的引用计数（reference count）。引用计数是一种内存管理机制，用于跟踪对象被引用的次数。当引用计数变为0时，对象就可以被释放或销毁。
+        
+    3.  **qdata**:
+        -   类型: GData*
+        -   描述: 私有成员。用于存储与对象相关的私有数据。GData是GLib库提供的一种数据结构，用于关联任意类型的私有数据到对象上。
+
+
+### 2. 类和对象
 在了解GObject的使用之前，先来认识几个关键的宏: 
 
 1.  **G_DEFINE_TYPE**: GLib 中用于简化 GObject 类型定义的宏。它是一个宏模板，定义了一个用于创建 GObject 类型的标准化流程，包括类型注册、类结构体定义和类初始化函数。
@@ -103,7 +258,21 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
     代码示例【[完整代码示例](./glib-main/dbus_obj.c)】: 
     ```c
     ...
-    // BASE_OBJ_TYPE是父类类型
+    typedef struct _DbusObj DbusObj;
+    typedef struct _DbusObjClass DbusObjClass;
+
+    struct _DbusObj
+    {
+        /* data */
+        BaseObj parent;
+    };
+
+    struct _DbusObjClass
+    {
+        /* data */
+        BaseObjClass parent_class;
+    };
+    // BASE_OBJ_TYPE是父类类型，BASE_OBJ_TYPE是以G_TYPE_OBJECT为基础类
     // 这个宏包含了DbusObj和DbusObjClass类型注册、类结构体定义和类初始化函数
     G_DEFINE_TYPE(DbusObj, dbus_obj, BASE_OBJ_TYPE)
 
@@ -120,7 +289,7 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
     ```
     通过使用 G_DEFINE_TYPE 宏，可以避免手动编写一些繁琐的类型定义代码和函数，在一定程度上简化了 GObject 类型的定义过程。
 
-2.  ***type_name*_get_type**: 用于获取一个 GObject 类型的 *type_name* 类型标识符（Type Identifier），返回的是GType，GType 是一个代表类型的数据类型。它用于表示在程序中定义的各种数据类型，如对象类、接口、枚举、结构体等。
+2.  ***type_name*_get_type**: 用于获取一个 GObject 类型的 *type_name* 类型标识符（Type Identifier），返回的是GType，GType 是一个代表类型的数据类型。它用于表示在程序中定义的各种数据类型，如对象类、接口、枚举、结构体等。注意，它是通过**G_DEFINE_TYPE**扩展而来的，也就是说它的实现在这个宏中，不需要手动实现。
 
     代码示例【[完整代码示例](./glib-main/dbus_obj.c)】: 
     ```c
@@ -362,153 +531,65 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
 
     ```
 
-### 2. GObjectClass结构体的介绍
-在了解GObject是怎么运作之前，还要认识一下GObjectClass，它的结构体原形是struct _GObjectClass，它是GObject的类结构体，也是GObject继承的基础。_GObjectClass 结构体中包含了一组函数指针，这些函数定义了在实例化 GObject 类型对象时的行为。这些函数指针包括构造函数 (constructor)、析构函数 (destructor)、对象属性的设置和获取函数、信号处理函数等。
+### 3.  继承和多态
+GObject支持继承和多态，允许通过派生类扩展已有的类。这种机制可以减少代码重复，并提供更高级的抽象和封装。通过继承，子类可以重写或添加新的方法，从而实现特定的行为。
 
-```
-struct  _GObjectClass
-{
-  GTypeClass   g_type_class;
+在前面的例子中其实已经实现了继承，再来看看多态是怎么实现的:
+```c
+    // 基类baseclass中包含了一个虚函数base_hello，然后在子类继承的时候重写
+    struct _BaseObjClass
+    {
+        /* data */
+        GObjectClass parent_class;
+        void	     (*base_hello)		(void);
+    };
+    ...
 
-  /*< private >*/
-  GSList      *construct_properties;
+    // 构建子类dbus
+    typedef struct _DbusObj DbusObj;
+    typedef struct _DbusObjClass DbusObjClass;
 
-  /*< public >*/
-  /* seldom overidden */
-  GObject*   (*constructor)     (GType                  type,
-                                 guint                  n_construct_properties,
-                                 GObjectConstructParam *construct_properties);
-  /* overridable methods */
-  void       (*set_property)		(GObject        *object,
-                                         guint           property_id,
-                                         const GValue   *value,
-                                         GParamSpec     *pspec);
-  void       (*get_property)		(GObject        *object,
-                                         guint           property_id,
-                                         GValue         *value,
-                                         GParamSpec     *pspec);
-  void       (*dispose)			(GObject        *object);
-  void       (*finalize)		(GObject        *object);
-  /* seldom overidden */
-  void       (*dispatch_properties_changed) (GObject      *object,
-					     guint	   n_pspecs,
-					     GParamSpec  **pspecs);
-  /* signals */
-  void	     (*notify)			(GObject	*object,
-					 GParamSpec	*pspec);
+    struct _DbusObj
+    {
+        /* data */
+        BaseObj parent;
+    };
 
-  /* called when done constructing */
-  void	     (*constructed)		(GObject	*object);
+    struct _DbusObjClass
+    {
+        /* data */
+        BaseObjClass parent_class;
+    };
+    // BASE_OBJ_TYPE是父类类型，BASE_OBJ_TYPE是以G_TYPE_OBJECT为基础类
+    // 这个宏包含了DbusObj和DbusObjClass类型注册、类结构体定义和类初始化函数
+    G_DEFINE_TYPE(DbusObj, dbus_obj, BASE_OBJ_TYPE)
 
-  /*< private >*/
-  gsize		flags;
-
-  /* padding */
-  gpointer	pdummy[6];
-};
-```
-
-_GObjectClass结构体成员: 
-
-1.  **g_type_class**:
-    -   类型: GTypeClass
-    -   描述: 用于存储 GObject 类的类型信息。GObject 类是 GObject 类型系统中的基本类型，g_type_class 可以用于访问或操作该类的类型信息。
-
-2.  **construct_properties**:
-    -   类型: GSList *
-    -   描述: : 这是一个指向 GSList 的指针，GSList 是一个单链表结构，用于存储构造属性（construct properties）。构造属性是在创建对象时设置的属性，通常用于初始化对象的状态。通过 construct_properties 列表，可以将一组属性关联到对象的构造过程中。
-
-3.  **constructor**:
-    -   类型: GObject* ()(GType, guint, GObjectConstructParam)
-    -   描述: 构造函数指针，用于实例化 GObject 类型的对象。
-    -   参数:
-        -   type: GObject 类型的 GType。
-        -   n_construct_properties: 构造函数需要的属性数量。
-        -   construct_properties: 构造函数需要的属性列表。
-    -   返回值: 新创建的 GObject 类型的对象的指针。
-
-4.  **set_property**:
-    -   类型: void ()(GObject, guint, const GValue*, GParamSpec*)
-    -   描述: 设置对象属性的函数指针。
-    -   参数:
-        -   object: 要设置属性的 GObject 对象指针。
-        -   property_id: 属性的标识符。
-        -   value: 属性的值。
-        -   pspec: 属性的参数规范。
-
-5.  **get_property**:
-    -   类型: void ()(GObject, guint, GValue*, GParamSpec*)
-    -   描述: 获取对象属性的函数指针。
-    -   参数:
-        -   object: 要获取属性值的 GObject 对象指针。
-        -   property_id: 属性的标识符。
-        -   value: 存储属性值的 GValue 结构体指针。
-        -   pspec: 属性的参数规范。
-
-6.  **dispose**:
-    -   类型: void ()(GObject)
-    -   描述: dispose 方法用于释放对象所拥有的资源，但是并不销毁对象本身。通常在此方法中进行资源的清理、断开连接、解除订阅等操作。调用 g_object_unref() 函数时会自动调用 dispose 方法，但也可以手动调用该方法。
-
-7.  **finalize**:
-    -   类型: void ()(GObject)
-    -   描述: finalize 方法是在对象的引用计数为0时自动调用的。它用于执行对象的最终化操作，例如释放内存、销毁相关的资源等。finalize 方法是 GObject 类的虚拟方法，可以在子类中对其进行重写以添加自定义的最终化逻辑。通过g_object_ref()可以增加引用计数。
-
-    >   dispose和finalize的区别: 
-    >   -   dispose 方法主要用于释放对象所拥有的资源，而不涉及对象自身的销毁。
-    >   -   finalize 方法用于对象的最终化操作，在对象被销毁之前执行，包括释放对象自身所占用的内存和资源。
-
-8.  **dispatch_properties_changed**:
-    -   类型: void ()(GObject, guint, GParamSpec**)
-    -   描述: 在对象的属性发生改变时调用的函数指针。用于发送属性改变的信号。
-    -   参数:
-        -   object: 属性发生改变的 GObject 对象指针。
-        -   n_pspecs: 发生改变的属性数量。
-        -   pspecs: 发生改变的属性的参数规范数组。
-
-9.  **notify**:
-    -   类型: void ()(GObject, GParamSpec*)
-    -   描述: 在对象的属性被修改时调用的函数指针。用于发送属性修改的信号。
-    -   参数:
-        -   object: 属性被修改的 GObject 对象指针。
-        -   pspec: 被修改的属性的参数规范。
-
-10. **constructed**:
-    -   类型: void ()(GObject)
-    -   描述: 对象构造完成后调用的函数指针。可以在此函数中执行初始化操作或触发其他相关处理。
-
-11. **flags**:
-    -   类型: gsize
-    -   描述: 该成员位域标志位，用于存储一些标志信息。可以使用该成员变量来存储与 GObject 类相关的标志或状态信息。它是一个私有成员，一般不做外部调用。
     
-12. **pdummy**:
-    -   类型: gpointer[6]
-    -   描述: 填充字段，仅用于对齐结构体成员。
+    static void dbus_hello (void)
+    {
+        g_log(domain, G_LOG_LEVEL_INFO, "dbus obj class say hello!");
+    }
 
-### 3. GObject结构体的介绍
-GObject内部结构是struct _GObject，它是GObject这个库的基础结构。_GObject的内部结构如下: 
+    static void dbus_obj_class_init (DbusObjClass *klass)
+    {
+        GObjectClass *object_class = G_OBJECT_CLASS (klass);
+        object_class->finalize = finalize;
+        object_class->dispose = dispose;
+        object_class->constructor = constructor;
+
+        // baseclass可以派生多个子类，都可以对基类的base_hello进行重写
+        BaseObjClass *base_class = BASE_OBJ_CLASS(klass);
+        base_class->base_hello = dbus_hello;
+    }
+
+    ...
+    // 在main.c中
+    DbusObj *obj = g_object_new(DBUS_OBJ_TYPE, NULL);
+    // obj可以是base的子类
+    BASE_OBJ_GET_CLASS(obj)->base_hello();
+    ...
+
 ```
-struct  _GObject
-{
-  GTypeInstance  g_type_instance;
-  
-  /*< private >*/
-  volatile guint ref_count;
-  GData         *qdata;
-};
-```
-_GObject结构体成员: 
-
-1.  **g_type_instance**:
-        -   类型: GTypeInstance
-        -   描述: 用于存储对象的类型信息和实例相关的数据。
-
-2.  **ref_count**:
-    -   类型: volatile guint
-    -   描述: 私有成员。用于表示对象的引用计数（reference count）。引用计数是一种内存管理机制，用于跟踪对象被引用的次数。当引用计数变为0时，对象就可以被释放或销毁。
-    
-3.  **qdata**:
-    -   类型: GData*
-    -   描述: 私有成员。用于存储与对象相关的私有数据。GData是GLib库提供的一种数据结构，用于关联任意类型的私有数据到对象上。
 
 ### 4.  GParamSpec的介绍和使用
 GParamSpec 结构体定义了属性的各种属性，例如名称、类型、默认值、范围等。GParamSpec 用于定义和管理 GObject 的属性系统。它的内部结构是GParamSpec。
