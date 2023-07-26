@@ -4,12 +4,11 @@
 #include <stdio.h>
 #include <gio/gio.h>
 #include "glib_micros.h"
+#include "my_type.h"
 
 typedef struct  _BaseObj BaseObj;
 typedef struct  _BaseObjClass BaseObjClass;
 typedef struct  _BaseObjPriv BaseObjPriv;
-typedef struct  _MyStruct  MyStruct;
-typedef struct  _Point  Point;
 
 struct  _BaseObj
 {
@@ -28,24 +27,12 @@ struct _BaseObjClass
     void	     (*base_hello)		(void);
 
 };
-
-typedef struct _Point{
-    gint x;
-    gint y;
-};
 struct  _BaseObjPriv
 {
   int prop_int;
   char * prop_string;
   MyStruct *prop_pointer;
-  Point point;
-};
-
-// 自定义结构体，作为GObject的属性
-typedef struct _MyStruct
-{
-  int value1;
-  char * value2;
+  MyCustomPoint point;
 };
 
 #define BASE_OBJ_TYPE (base_obj_get_type()) 
@@ -59,11 +46,14 @@ typedef struct _MyStruct
 #define BASE_OBJ_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE((obj), BASE_OBJ_TYPE, BaseObjPriv))
 
+// 属性
 #define BASE_PROP_STRING "prop-string"
 #define BASE_PROP_INT "prop-int"
 #define BASE_PROP_POINTER "prop-pointer"
 #define BASE_PROP_BOXED "prop-boxed"
 
+// 信号
+#define BASE_SIGNAL_PROP_CHANGED "prop-changed"
 
 GType base_obj_get_type (void);
 
@@ -76,9 +66,11 @@ static void dispose(GObject *object);
 static GObject* constructor(GType type,guint n_construct_properties, GObjectConstructParam *construct_properties);
 static void set_property(GObject *object,guint  property_id,const GValue   *value,GParamSpec    *pspec);
 static void get_property(GObject *object,guint  property_id,const GValue   *value,GParamSpec    *pspec);
+static void base_signal_prop_changed(BaseObj *obj, int value, gpointer user_data);
 
 static void base_hello();
 void base_obj_print_priv(BaseObj *self);
+void base_obj_set_prop(BaseObj *obj);
 
 
 #endif

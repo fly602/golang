@@ -511,7 +511,9 @@ _GObject结构体成员：
     -   描述: 私有成员。用于存储与对象相关的私有数据。GData是GLib库提供的一种数据结构，用于关联任意类型的私有数据到对象上。
 
 ### 4.  GParamSpec的介绍和使用
-GParamSpec 结构体定义了属性的各种属性，例如名称、类型、默认值、范围等。GParamSpec 用于定义和管理 GObject 的属性系统。它的内部结构是GParamSpec。结构体原形如下：
+GParamSpec 结构体定义了属性的各种属性，例如名称、类型、默认值、范围等。GParamSpec 用于定义和管理 GObject 的属性系统。它的内部结构是GParamSpec。
+
+结构体原形如下：
 ```
 struct _GParamSpec
 {
@@ -572,8 +574,15 @@ struct _GParamSpec
         -   类型: guint
         -   描述: 私有成员。属性的排序标识符，用于属性的排序。
 
-2.  GParamSpec的使用
-    1.  g_param_spec_*type* : 用于创建type类型的属性参数。返回的是GParamSpec的指针。一般用于GObject类构造的时候。
+    它的作用以及对比普通属性参数的区别如下：
+    1.  提供属性元数据：GParamSpec结构体中包含了属性的各种元数据，如名称、类型、默认值、访问权限等。这些信息可以用于属性的查询、验证和映射等操作。普通的属性只包含属性值本身，而GParamSpec可以提供更多的属性信息。
+    2.  支持属性验证：GParamSpec结构体中可以定义属性的取值范围、约束条件和验证规则。通过使用这些元数据，可以对属性进行验证，以确保属性值的合法性和一致性。
+    3.  支持信号传递：GParamSpec结构体还可以与属性相关联的信号进行关联。这样，当属性的值发生变化时，可以触发相关的信号传递，从而允许其他对象对属性的变化做出响应。
+    4.  提供属性的获取和设置接口：通过GParamSpec结构体，可以定义属性的获取和设置接口，以方便属性值的读取和修改。这样，属性的访问可以通过get和set方法进行，使得属性的操作更加统一和易用。
+
+2.  GParamSpec的安装
+    1.  g_param_spec_*type* : 用于创建type类型的属性参数。返回的是GParamSpec的指针。一般用于GObject类构造的时候，常用的类型都有对应的函数添加属性。
+        代码示例【[完整代码示例](./glib-main/base_obj.c)】：
         ```
         // 添加字符串类型的属性
         obj_properties[PROP_TYPE_STRING] = 
@@ -582,6 +591,35 @@ struct _GParamSpec
                 "",  // nick
                 "",  // blurb
                 "",  // 默认值
+                G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS // 属性的读写标志
+        );
+        // 添加INT类型的属性
+        obj_properties[PROP_TYPE_INT] = 
+            g_param_spec_int(
+                BASE_PROP_INT,  // 属性名称
+                "int type",  // nick
+                "prop type is int",  // blurb
+                0,  // 最小值
+                100,  // 最大值
+                50,  // 默认值
+                G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS // 属性的读写标志
+        );
+        // 添加结构体指针类型的属性
+        obj_properties[PROP_TYPE_POINTER] = 
+            g_param_spec_pointer(
+                BASE_PROP_POINTER,  // 属性名称
+                "pointer type",  // nick
+                "prop type is pointer",  // blurb
+                G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS // 属性的读写标志
+        );
+
+        // 添加结构体类型的属性
+        obj_properties[PROP_TYPE_BOXED] = 
+            g_param_spec_boxed(
+                BASE_PROP_BOXED,  // 属性名称
+                "boxed type",  // nick
+                "prop type is boxed",  // blurb
+                MY_BOXED_POINT_TYPE,     // GType，将结构体转成指针存放
                 G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS // 属性的读写标志
         );
         ```
@@ -596,3 +634,242 @@ struct _GParamSpec
         ```
         g_object_class_install_properties(klass,_PROPERTY_ENUMS_LAST,obj_properties);
         ```
+    
+    3.  g_object_class_install_property：
+        -   类型: void ()(GObjectClass*, guint, GParamSpec*)
+        -   描述: 在GObject类中安装属性列表。这个函数将一个属性参数与GObject类进行关联，和g_object_class_install_properties功能一样，区别是它安装单个属性。
+        -   参数:
+            -   class: 要安装属性参数的GObject类的指针。
+            -   property_id: 属性的唯一标识符，类型为guint（无符号整数）。
+            -   pspecs: 指向GParamSpec结构的指针，描述了要安装的属性的详细信息。
+
+        ```
+        g_object_class_install_property(klass,PROP_TYPE_STRING,obj_properties[PROP_TYPE_STRING]);
+        g_object_class_install_property(klass,PROP_TYPE_INT,obj_properties[PROP_TYPE_INT]);
+        g_object_class_install_property(klass,PROP_TYPE_POINTER,obj_properties[PROP_TYPE_POINTER]);
+        g_object_class_install_property(klass,PROP_TYPE_BOXED,obj_properties[PROP_TYPE_BOXED]);
+        ```
+
+3.  GParamSpec值的设置
+
+    GParamSpec值的设置常见的有两个方法可以设置，g_object_set和g_object_set_property：
+    1.  g_object_set:
+        -   类型: void ()(gpointer, const gchar *, ...)
+        -   描述: 用于设置对象的属性值,可设置多个。
+        -   参数:
+            -   _object: 要设置属性的对象指针。
+            -   first_property_name: 第一个属性的名称，类型为const gchar *。该函数可以接受多个属性名称和对应的属性值。
+            -   ...: 属性名称和对应的属性值,在设置最后一个参数的值后，还需要加上NULL，不然g_object_set遍历参数的时候会报错。
+
+        ```c
+        // 设置int类型属性的值
+        // g_object_set(G_OBJECT(obj),BASE_PROP_INT,89,NULL);
+
+        // 设置指针类型属性的值
+        MyStruct *prop_pointer = g_new(MyStruct,1);
+        prop_pointer->value1 = 123;
+        prop_pointer->value2 = "bbbb";
+        // g_object_set(G_OBJECT(obj),BASE_PROP_POINTER,prop_pointer,NULL);
+
+        // 设置结构体类型的值
+        MyCustomPoint *point = g_new(MyCustomPoint,1);
+        point->x = 51;
+        point->y = 49;
+        // g_object_set(G_OBJECT(obj),BASE_PROP_BOXED,point,NULL);
+
+        // 用一个g_object_set设置三个属性的值
+        g_object_set(G_OBJECT(obj),BASE_PROP_INT,89,BASE_PROP_POINTER,prop_pointer,BASE_PROP_BOXED,point,NULL);
+        ```
+
+    2.  g_object_set_property:
+        -   类型: void ()(GObject *, const gchar *, const GValue *)
+        -   描述: 用于设置对象的属性值。
+        -   参数:
+            -   object: 要设置属性的对象指针。
+            -   property_name: 属性的名称，类型为const gchar *。
+            -   value: 属性名称和对应的属性值,类型为const GValue *。
+        ```c
+        // 如果要使用g_object_set_property设置属性的值，需要将值转换成 GValue *类型，需要注意GValue的内存管理于释放。
+        GValue gval_string = G_VALUE_INIT;
+        g_value_init(&gval_string,G_TYPE_STRING);
+        g_value_set_string(&gval_string,"asdajksda");
+        g_object_set_property(G_OBJECT(obj),BASE_PROP_STRING,&gval_string);
+        // GValue的释放
+        g_value_unset(&gval_string);
+        ```
+4.  GParamSpec值的获取
+
+    GParamSpec值的设置常见的有两个方法可以设置，g_object_get和g_object_get_property：
+    1.  g_object_get:
+        -   类型: void ()(gpointer, const gchar *, ...)
+        -   描述: 用于获取对象的属性值,可获取多个。
+        -   参数:
+            -   _object: 要获取属性的对象指针。
+            -   first_property_name: 第一个属性的名称，类型为const gchar *。该函数可以接受多个属性名称和存放数据的地址。
+            -   ...: 属性名称和对应的属性值,在设置最后一个参数的值后，还需要加上NULL，不然g_object_set遍历参数的时候会报错。
+        
+        ```c
+        gchar * val_str;
+        g_object_get(G_OBJECT(self),BASE_PROP_STRING,&val_str,NULL);
+        g_log(domain, G_LOG_LEVEL_INFO, "base obj %s = %s", BASE_PROP_STRING,val_str);
+        g_log(domain, G_LOG_LEVEL_INFO, "base obj self %s = %s\n", BASE_PROP_STRING,self->priv->prop_string);
+
+        gint val_int;
+        g_object_get(G_OBJECT(self),BASE_PROP_INT,&val_int,NULL);
+        g_log(domain, G_LOG_LEVEL_INFO, "base obj %s = %d", BASE_PROP_INT,val_int);
+        g_log(domain, G_LOG_LEVEL_INFO, "base obj self %s = %d\n", BASE_PROP_INT,self->priv->prop_int);
+        ```
+    2.  g_object_get_property
+        -   类型: void ()(GObject *, const gchar *, GValue *)
+        -   描述: 用于设置对象的属性值。
+        -   参数:
+            -   object: 要获取属性的对象指针。
+            -   property_name: 属性的名称，类型为const gchar *。
+            -   value: 获取属性后的存储地址,类型为GValue *。
+        ```c
+        // 如果要使用g_object_set_property设置属性的值，需要将值转换成 GValue *类型，需要注意GValue的内存管理于释放。
+        GValue value = G_VALUE_INIT;
+        g_value_init (&value, MY_BOXED_POINT_TYPE);
+        g_object_get_property(G_OBJECT(self),BASE_PROP_BOXED,&value);
+        MyCustomPoint prop_box = *(MyCustomPoint *)g_value_get_boxed(&value);
+        g_log(domain, G_LOG_LEVEL_INFO, "base obj %s: [x=%d y=%d]", BASE_PROP_BOXED,prop_box.x,prop_box.y);
+        g_log(domain, G_LOG_LEVEL_INFO, "base obj self %s: [x=%d y=%d]\n", BASE_PROP_BOXED,self->priv->point.x,self->priv->point.y);
+        // GValue的释放
+        g_value_unset(&value);
+        ```        
+    
+### 5.  signal的介绍和使用
+1.  信号的创建g_signal_new: 
+-   类型: guint ()(const gchar  *, GType, guint, GSignalAccumulator, gpointer, GSignalCMarshaller, GType, guint, ...)
+-   描述: 用于定义一个新的信号。它确定了信号的名称、发送者、标识、参数等属性，并将该信号注册到GObject类型系统中。
+-   参数:
+    -   signal_name: 信号的名称，用于在代码中标识信号。
+    -   itype: 信号发送者的类型，通常使用G_TYPE_FROM_CLASS宏获取。
+    -   signal_flags: 信号的标志，指定信号的属性，如运行阶段、累加器行为等。
+    -   class_offset: 信号所属类的偏移量（通常为0）。
+    -   accumulator: 信号的累加器函数，用于决定多个信号处理函数返回值的合并方式。如果不需要累加器，则可传递NULL。
+    -   accu_data: 传递给累加器函数的用户数据。
+    -   c_marshaller: 信号的C marshaller函数，用于在信号发射时管理信号参数的内存分配和释放。通常使用NULL。
+    -   return_type: 信号的返回值类型。如果信号没有返回值，则使用G_TYPE_NONE。
+    -   n_params: 信号的参数数量。
+    -   ... : 信号的参数列表。
+
+    ```c
+    // 添加信号
+    g_signal_new(
+        BASE_SIGNAL_STRING_CHANGED,
+        G_TYPE_FROM_CLASS(klass),
+        G_SIGNAL_RUN_FIRST,
+        0,
+        NULL,
+        NULL,
+        NULL,
+        G_TYPE_NONE,
+        1,
+        G_TYPE_STRING
+    );
+    ```
+
+2.  连接信号处理函数g_signal_connect:
+-   类型: gulong ()(gpointer, const gchar *, GCallback, gpointer)
+-   描述: 用于定义一个新的信号。它确定了信号的名称、发送者、标识、参数等属性，并将该信号注册到GObject类型系统中。
+-   参数:
+    -   instance: 指向对象的指针。
+    -   detailed_signal: 详细信号的字符串表示。
+    -   c_handler: 指向回调函数的指针。
+    -   data: 传递给回调函数的用户数据。
+
+    ```c
+    // 连接信号处理函数
+    static void base_signal_prop_changed(BaseObj *obj, int value, gpointer user_data) {
+        // 处理信号的逻辑
+        // ...
+        BaseObjPriv *priv = BASE_OBJ_GET_PRIVATE(obj);
+        switch (value)
+        {
+        case PROP_TYPE_STRING:
+            g_log(domain, G_LOG_LEVEL_INFO, "base handle signal %s change to %s\n",BASE_PROP_STRING,priv->prop_string);
+            break;
+        case PROP_TYPE_INT:
+            /* code */
+            g_log(domain, G_LOG_LEVEL_INFO, "base handle signal %s change to %d\n",BASE_PROP_INT,priv->prop_int);
+            break;
+        case PROP_TYPE_POINTER:
+            /* code */
+            g_log(domain, G_LOG_LEVEL_INFO, "base handle signal %s change to [%d,%s]\n",BASE_PROP_POINTER,priv->prop_pointer->value1,priv->prop_pointer->value2);
+            break;
+        case PROP_TYPE_BOXED:
+            /* code */
+            g_log(domain, G_LOG_LEVEL_INFO, "base handle signal %s change to [%d,%d]\n",BASE_PROP_BOXED,priv->point.x,priv->point.y);
+            break;
+        default:
+            break;
+        }    
+    }
+    static void base_obj_init(BaseObj *self)
+    {
+        g_log(domain, G_LOG_LEVEL_INFO, "base obj init!");
+        self->desc = "base";
+        g_log(domain, G_LOG_LEVEL_INFO, "base obj init done!\n");
+        // 连接信号处理函数
+        // 
+        int *user_data = g_new0(int,1);
+        *user_data = 100;
+        // 监听信号名称为"prop-changed"的所有信号，并将user_data传给处理函数
+        g_signal_connect(self, BASE_SIGNAL_PROP_CHANGED , G_CALLBACK(base_signal_prop_changed), user_data);
+
+        // 监听信号名称为"prop-changed"的特定的信号，并将user_data传给处理函数
+        g_signal_connect(self, BASE_SIGNAL_PROP_CHANGED"::string" , G_CALLBACK(base_signal_prop_changed), user_data);
+        g_signal_connect(self, BASE_SIGNAL_PROP_CHANGED"::int" , G_CALLBACK(base_signal_prop_changed), user_data);
+
+    }
+    ```
+
+3.  信号的触发
+    1.  g_signal_emit
+    -   类型: void ()(gpointer, guint, GQuark, ...)
+    -   描述: 用于定义一个新的信号。它确定了信号的名称、发送者、标识、参数等属性，并将该信号注册到GObject类型系统中。
+    -   参数:
+        -   instance: 指向对象的指针。
+        -   signal_id: 信号的id，即g_signal_new的返回值。
+        -   detail: 表示信号的详细信息，可以使用 g_quark_from_static_string 函数将字符串转换为 GQuark 类型。
+        -   ... : 可变参数，用于传递信号的参数。
+    ```c
+    static void set_property(GObject *object,guint  property_id,const GValue   *value,GParamSpec    *pspec)
+    {
+        g_log(domain, G_LOG_LEVEL_INFO, "set_property property_id=%d, type_name=%s!",property_id,g_type_name (pspec->value_type));
+        BaseObjPriv *priv = BASE_OBJ_GET_PRIVATE(object);
+        switch (property_id)
+        {
+        case PROP_TYPE_STRING:
+            priv->prop_string =  g_value_dup_string(value);
+            g_signal_emit(object,base_signals[PROP_TYPE_STRING],0,priv->prop_string);
+            break;
+        ...
+        }
+    }
+    ```
+
+
+    2.  g_signal_emit_by_name
+    -   类型: void ()(gpointer, const gchar *, ...)
+    -   描述: 用于定义一个新的信号。它确定了信号的名称、发送者、标识、参数等属性，并将该信号注册到GObject类型系统中。
+    -   参数:
+        -   instance: 指向对象的指针。
+        -   detailed_signal: 表示要发送的信号的名称和详细说明，格式为"signal-name::detail"。例如，"clicked"是GtkButton的一个常见信号，"clicked::right-button"表示右键点击事件。
+        -   ... : 可变参数，用于传递信号的参数。
+    ```c
+    static void set_property(GObject *object,guint  property_id,const GValue   *value,GParamSpec    *pspec)
+    {
+        g_log(domain, G_LOG_LEVEL_INFO, "set_property property_id=%d, type_name=%s!",property_id,g_type_name (pspec->value_type));
+        BaseObjPriv *priv = BASE_OBJ_GET_PRIVATE(object);
+        switch (property_id)
+        {
+        case PROP_TYPE_STRING:
+            priv->prop_string =  g_value_dup_string(value);
+            g_signal_emit_by_name(object,BASE_SIGNAL_STRING_CHANGED,priv->prop_string);
+            break;
+        ...
+        }
+    }
+    ```

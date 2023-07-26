@@ -41,11 +41,13 @@ static void dbus_hello (void)
 
 static void finalize (GObject *object)
 {
+    G_OBJECT_CLASS(dbus_obj_parent_class)->finalize(object);
     g_log(domain, G_LOG_LEVEL_INFO, "dbus obj class finalize!");
 }
 
 static void dispose(GObject *object)
 {
+    G_OBJECT_CLASS(dbus_obj_parent_class)->dispose(object);
     g_log(domain, G_LOG_LEVEL_INFO, "dbus obj class dispose!");
 }
 

@@ -1,12 +1,11 @@
 #include <stdio.h>
+#include <locale.h>
 #include <gio/gio.h>
+#include "glib_micros.h"
 #include "base_obj.h"
 #include "dbus_obj.h"
 
 static const gchar *domain = "glib_main";
-
-#define g_log(log_domain,log_level,format, ...) \
-    g_log(log_domain, log_level, "%s:%d: " format, __FILE__, __LINE__, ##__VA_ARGS__)
 
 void test_g_new0(){
     // 使用g_new0分配内存
@@ -37,6 +36,9 @@ gboolean timeout_callback(gpointer data) {
 GMainLoop *loop;
 
 int main(){
+    // 设置中文环境
+    setlocale(LC_ALL, "");
+
     test_g_new0();
     loop = g_main_loop_new (NULL, TRUE);
     // 创建base_obj
@@ -69,6 +71,9 @@ int main(){
 
     // 执行base类对象的方法
     base_dbus_class->base_hello();
+
+    base_obj_set_prop(BASE_OBJ(dbus));
+    base_obj_print_priv(BASE_OBJ(dbus));
 
     // 增加dbus的引用计数
     gpointer p1 = g_object_ref(dbus);
