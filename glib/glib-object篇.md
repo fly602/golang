@@ -4,25 +4,25 @@ Glib是一个通用的C语言工具库，提供了一组用于编写高效、可
 
 GObject是Glib库的一个组成部分，它是一个面向对象的编程框架。它提供了一套用于创建和管理对象、信号和属性的机制，并且支持对象的继承和多态。GObject使用Glib的基本功能，并扩展了它以支持对象的特性，例如封装、继承和多态。
 
--   对象模型：GObject基于一种称为"基于类的对象模型"的设计范式。每个对象都是基于一个类创建的，类定义了对象的属性和方法。对象可以从类继承属性和方法，并且可以重写或扩展它们。类使用C结构来表示，并且在运行时会有一个唯一的类对象来代表它。
+-   **对象模型**: GObject基于一种称为"基于类的对象模型"的设计范式。每个对象都是基于一个类创建的，类定义了对象的属性和方法。对象可以从类继承属性和方法，并且可以重写或扩展它们。类使用C结构来表示，并且在运行时会有一个唯一的类对象来代表它。
 
--   类和对象：在GObject中，类和对象是紧密相关且相互依赖的概念。类定义了一组属性、方法和信号，而对象是类的一个实例，它具有类定义的属性和方法。类通常用于创建对象的蓝图，对象则是根据类定义实例化的。
+-   **类和对象**: 在GObject中，类和对象是紧密相关且相互依赖的概念。类定义了一组属性、方法和信号，而对象是类的一个实例，它具有类定义的属性和方法。类通常用于创建对象的蓝图，对象则是根据类定义实例化的。
 
--   属性：属性是GObject中最重要的概念之一。属性是对象的状态或特征，例如颜色、大小、可见性等等。每个属性都有一个名称、类型和访问方法。GObject提供了一些宏和函数，用于定义和使用属性。属性支持变化通知，当属性的值改变时，可以发送信号通知其他部分。
+-   **属性**: 属性是GObject中最重要的概念之一。属性是对象的状态或特征，例如颜色、大小、可见性等等。每个属性都有一个名称、类型和访问方法。GObject提供了一些宏和函数，用于定义和使用属性。属性支持变化通知，当属性的值改变时，可以发送信号通知其他部分。
 
--   信号：信号是GObject中的一个核心概念，它用于实现对象间的通信和事件处理。信号是一种机制，当对象的某个特定事件发生时，发送信号通知其他对象。信号通常与回调函数关联，当信号被触发时，相应的回调函数会被调用。GObject提供了一些宏和函数，用于定义和处理信号。
+-   **信号**: 信号是GObject中的一个核心概念，它用于实现对象间的通信和事件处理。信号是一种机制，当对象的某个特定事件发生时，发送信号通知其他对象。信号通常与回调函数关联，当信号被触发时，相应的回调函数会被调用。GObject提供了一些宏和函数，用于定义和处理信号。
 
--   继承和多态：GObject支持继承和多态，允许通过派生类扩展已有的类。这种机制可以减少代码重复，并提供更高级的抽象和封装。通过继承，子类可以重写或添加新的方法，从而实现特定的行为。
+-   **继承和多态**: GObject支持继承和多态，允许通过派生类扩展已有的类。这种机制可以减少代码重复，并提供更高级的抽象和封装。通过继承，子类可以重写或添加新的方法，从而实现特定的行为。
 
--   对象系统：GObject提供了一系列函数和宏，用于创建、初始化、操作和销毁对象。这些函数和宏可以创建对象实例，设置和获取属性值，连接信号和槽，管理对象的引用计数等。GObject还提供了一些辅助函数和工具，用于对象的类型检查和转换。
+-   **对象系统**: GObject提供了一系列函数和宏，用于创建、初始化、操作和销毁对象。这些函数和宏可以创建对象实例，设置和获取属性值，连接信号和槽，管理对象的引用计数等。GObject还提供了一些辅助函数和工具，用于对象的类型检查和转换。
 
 本文将通过C语言编写具体的代码示例对GObject的功能和使用方法进行具体的说明。
 
-## 一、调试环境搭建：
+## 一、调试环境搭建: 
 ### 1. 调试包的安装
-glib的so库一般放在libglib2.0-0这个包中，如果想通过gdb调试glib库，需要安装相应的调试包：libglib2.0-0-dbgsym。gdb在跟踪的时候可以清除的看到库函数的调用堆栈以及参数变量的内容。
+glib的so库一般放在libglib2.0-0这个包中，如果想通过gdb调试glib库，需要安装相应的调试包: libglib2.0-0-dbgsym。gdb在跟踪的时候可以清除的看到库函数的调用堆栈以及参数变量的内容。
 ### 2. 编译环境
-引用glib库的时候，编译时需要带上glib的库和头文件，可以通过pkg-config --cflags --libs查询，例如引用了glib和gobject：
+引用glib库的时候，编译时需要带上glib的库和头文件，可以通过pkg-config --cflags --libs查询，例如引用了glib和gobject: 
 ```sh
 uos@uos-PC:~$ pkg-config --cflags --libs glib-2.0 gobject-2.0
 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -lgobject-2.0 -lglib-2.0
@@ -36,8 +36,8 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
 ```
 
 ### 3. vscode调试环境搭建
-1.  添加工作区：为了方便调试和代码跟踪，可以将项目可glib源码添加到同一工作区，代码分析的时候，vscode可以跳转到glib源码中。
-2.  添加头文件路径：一般情况下，直接打开引用glib库的项目的时候，会提示错误，找不到glib的头文件，可以在.vscode/c_cpp_properties.json中添加头文件路径。例如：
+1.  **添加工作区**: 为了方便调试和代码跟踪，可以将项目可glib源码添加到同一工作区，代码分析的时候，vscode可以跳转到glib源码中。
+2.  **添加头文件路径**: 一般情况下，直接打开引用glib库的项目的时候，会提示错误，找不到glib的头文件，可以在.vscode/c_cpp_properties.json中添加头文件路径。例如: 
     ```json
     {
         "configurations": [
@@ -54,7 +54,7 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
         "version": 4
     }
     ```
-3.  源码关联：在.vscode/launch.json中添加如下代码，在vscode中通过gdb调试的时候，可以逐步跟踪跳转到glib的源码中:
+3.  **源码关联**: 在.vscode/launch.json中添加如下代码，在vscode中通过gdb调试的时候，可以逐步跟踪跳转到glib的源码中:
     ```json
     {
         ...
@@ -81,26 +81,26 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
 ## 二、GObject的使用
 
 ### 1. GObject几个比较重要的宏
-在了解GObject的使用之前，先来认识几个关键的宏：
+在了解GObject的使用之前，先来认识几个关键的宏: 
 
-1.  G_DEFINE_TYPE: GLib 中用于简化 GObject 类型定义的宏。它是一个宏模板，定义了一个用于创建 GObject 类型的标准化流程，包括类型注册、类结构体定义和类初始化函数。
+1.  **G_DEFINE_TYPE**: GLib 中用于简化 GObject 类型定义的宏。它是一个宏模板，定义了一个用于创建 GObject 类型的标准化流程，包括类型注册、类结构体定义和类初始化函数。
 
-    函数原形：
+    函数原形: 
     ```
     G_DEFINE_TYPE (Type, type_name, PARENT_TYPE)
     ```
-    参数说明：
+    参数说明: 
 
-    -   Type：要定义的 GObject 类型的名称。
-    -   type_name：类型名称的小写形式，用于内部结构体的命名。
-    -   PARENT_TYPE：父类型的 GObject 类型的名称，通常是你自己定义的类的父类。
-    -   G_DEFINE_TYPE 宏会自动生成以下内容：
-        -   类型注册函数（Type_register_type()）：该函数在运行时注册类型以便使用。
-        -   内部结构体定义：struct _Type，用于存储实例字段和函数指针。
-        -   类初始化函数（Type_class_init()）：用于初始化类的虚函数表，并可以添加其他初始化逻辑。
-        -   实例初始化函数（Type_init()）：用于初始化实例字段和其他实例特定的逻辑。
+    -   Type: 要定义的 GObject 类型的名称。
+    -   type_name: 类型名称的小写形式，用于内部结构体的命名。
+    -   PARENT_TYPE: 父类型的 GObject 类型的名称，通常是你自己定义的类的父类。
+    -   G_DEFINE_TYPE 宏会自动生成以下内容: 
+        -   类型注册函数（Type_register_type()）: 该函数在运行时注册类型以便使用。
+        -   内部结构体定义: struct _Type，用于存储实例字段和函数指针。
+        -   类初始化函数（Type_class_init()）: 用于初始化类的虚函数表，并可以添加其他初始化逻辑。
+        -   实例初始化函数（Type_init()）: 用于初始化实例字段和其他实例特定的逻辑。
 
-    代码示例【[完整代码示例](./glib-main/dbus_obj.c)】：
+    代码示例【[完整代码示例](./glib-main/dbus_obj.c)】: 
     ```c
     ...
     // BASE_OBJ_TYPE是父类类型
@@ -120,9 +120,9 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
     ```
     通过使用 G_DEFINE_TYPE 宏，可以避免手动编写一些繁琐的类型定义代码和函数，在一定程度上简化了 GObject 类型的定义过程。
 
-2.  *type_name*_get_type: 用于获取一个 GObject 类型的 *type_name* 类型标识符（Type Identifier），返回的是GType，GType 是一个代表类型的数据类型。它用于表示在程序中定义的各种数据类型，如对象类、接口、枚举、结构体等。
+2.  ***type_name*_get_type**: 用于获取一个 GObject 类型的 *type_name* 类型标识符（Type Identifier），返回的是GType，GType 是一个代表类型的数据类型。它用于表示在程序中定义的各种数据类型，如对象类、接口、枚举、结构体等。
 
-    代码示例【[完整代码示例](./glib-main/dbus_obj.c)】：
+    代码示例【[完整代码示例](./glib-main/dbus_obj.c)】: 
     ```c
     ...
     // BASE_OBJ_TYPE是父类类型
@@ -139,22 +139,22 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
     }
     ...
     ```
-    运行输出结果：
+    运行输出结果: 
     ```sh
     DBUS-OBJ-INFO: 16:59:07.002: dbus_obj.c:50: g_type_name(DBUS_OBJ_TYPE) =DbusObj!
     ```
 
-3.  G_TYPE_FROM_INSTANCE: 从给定的 GObject 实例 instance 中获取其对应的 GType。
+3.  **G_TYPE_FROM_INSTANCE**: 从给定的 GObject 实例 instance 中获取其对应的 GType。
 
-    函数原形：
+    函数原形: 
     ```c
     G_TYPE_FROM_INSTANCE(instance)
     ```
-    参数说明：
+    参数说明: 
 
-    -   instance：要进行类型转换的对象实例。
+    -   instance: 要进行类型转换的对象实例。
 
-    代码示例【[完整代码示例](./glib-main/dbus_obj.c)】：
+    代码示例【[完整代码示例](./glib-main/dbus_obj.c)】: 
     ```c
     ...
     // BASE_OBJ_TYPE是父类类型
@@ -172,24 +172,24 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
     ...
     ```
 
-    运行输出结果：
+    运行输出结果: 
     ```sh
     DBUS-OBJ-INFO: 17:09:44.275: dbus_obj.c:51: g_type_name(G_TYPE_FROM_INSTANCE(obj))=DbusObj!
     ```
 
-4.  G_TYPE_CHECK_INSTANCE_CAST：GLib 开发中用于类型转换的宏定义之一。将给定的 GObject 实例 instance 转换为目标类型 target_type 的实例。这个宏会检查实例的类型是否与目标类型匹配，如果匹配，则返回目标类型的实例；如果不匹配，则返回 NULL。
+4.  **G_TYPE_CHECK_INSTANCE_CAST**: GLib 开发中用于类型转换的宏定义之一。将给定的 GObject 实例 instance 转换为目标类型 target_type 的实例。这个宏会检查实例的类型是否与目标类型匹配，如果匹配，则返回目标类型的实例；如果不匹配，则返回 NULL。
 
-    函数原形：
+    函数原形: 
     ```c
     G_TYPE_CHECK_INSTANCE_CAST(instance, g_type, c_type)
     ```
-    参数说明：
+    参数说明: 
 
-    -   instance：要进行类型转换的对象实例。
-    -   g_type：目标类型的 GObject 类型。
-    -   c_type：目标类型的 C 类型。
+    -   instance: 要进行类型转换的对象实例。
+    -   g_type: 目标类型的 GObject 类型。
+    -   c_type: 目标类型的 C 类型。
 
-    代码示例【[完整代码示例](./glib-main/dbus_obj.h)】：
+    代码示例【[完整代码示例](./glib-main/dbus_obj.h)】: 
     ```c
     // base_obj.h
     ...
@@ -210,23 +210,23 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
     ...
 
     ```
-    运行输出结果：
+    运行输出结果: 
     ```sh
     // 地址都一样，其实就是类型转换
     DBUS-OBJ-INFO: 17:28:51.255: dbus_obj.c:54: obj=0x0x411ac0 base=0x0x411ac0!
     ```
-5.  G_TYPE_INSTANCE_GET_CLASS: 获取给定 GObject 实例 instance 所属类的类结构体指针。
+5.  **G_TYPE_INSTANCE_GET_CLASS**: 获取给定 GObject 实例 instance 所属类的类结构体指针。
 
-    函数原形：
+    函数原形: 
     ```c
     G_TYPE_INSTANCE_GET_CLASS(instance, g_type, c_type)
     ```
-    参数说明：
-    -   instance：需要检查的 GObjectClass 结构体。
-    -   g_type：目标类的 GType。
-    -   c_type：目标类的结构体类型。
+    参数说明: 
+    -   instance: 需要检查的 GObjectClass 结构体。
+    -   g_type: 目标类的 GType。
+    -   c_type: 目标类的结构体类型。
 
-    代码示例【[完整代码示例](./glib-main/dbus_obj.c)】：
+    代码示例【[完整代码示例](./glib-main/dbus_obj.c)】: 
     ```c
         ...
     // BASE_OBJ_TYPE是父类类型
@@ -246,17 +246,17 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
     ```
 
 
-6.  G_TYPE_CHECK_INSTANCE_TYPE: GLib 开发中用于检查类型的宏定义之一。判断给定的 GObject 实例 instance 是否属于指定的类型 g_type。如果实例的类型等于或是指定类型的子类型，则宏会返回 TRUE，否则返回 FALSE。
+6.  **G_TYPE_CHECK_INSTANCE_TYPE**: GLib 开发中用于检查类型的宏定义之一。判断给定的 GObject 实例 instance 是否属于指定的类型 g_type。如果实例的类型等于或是指定类型的子类型，则宏会返回 TRUE，否则返回 FALSE。
 
-    函数原形：
+    函数原形: 
     ```
     G_TYPE_CHECK_INSTANCE_TYPE(instance, g_type) 
     ```
-    参数说明：
-    -   instance：需要检查类型的 GObject 实例。
-    -   g_type：目标类的 GType。
+    参数说明: 
+    -   instance: 需要检查类型的 GObject 实例。
+    -   g_type: 目标类的 GType。
 
-    代码示例【[完整代码示例](./glib-main/main.c)】：
+    代码示例【[完整代码示例](./glib-main/main.c)】: 
     ```c
     // base_obj.h
     ...
@@ -284,17 +284,17 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
     ...
 
     ```
-7.  G_TYPE_CHECK_CLASS_TYPE: GLib 开发中用于检查类型的宏定义之一。判断给定的 GObject 类的类型是否与指定的类型 g_type 匹配。如果类的类型等于或是指定类型的子类，则宏会返回 TRUE，否则返回 FALSE。
+7.  **G_TYPE_CHECK_CLASS_TYPE**: GLib 开发中用于检查类型的宏定义之一。判断给定的 GObject 类的类型是否与指定的类型 g_type 匹配。如果类的类型等于或是指定类型的子类，则宏会返回 TRUE，否则返回 FALSE。
 
-    函数原形：
+    函数原形: 
     ```
     G_TYPE_CHECK_CLASS_TYPE(g_class, g_type) 
     ```
-    参数说明：
-    -   g_class：需要检查类型的 GObject 类的类结构体指针。
-    -   g_type：目标类的 GType。
+    参数说明: 
+    -   g_class: 需要检查类型的 GObject 类的类结构体指针。
+    -   g_type: 目标类的 GType。
 
-    代码示例【[完整代码示例](./glib-main/main.c)】：
+    代码示例【[完整代码示例](./glib-main/main.c)】: 
     ```c
     // base_obj.h
     ...
@@ -325,18 +325,18 @@ CFLAGS = -g -Wall -Wpedantic -Wno-padded -O $(shell pkg-config --cflags --libs g
 
     ```
 
-8.  G_TYPE_CHECK_CLASS_CAST:  GLib 开发中用于类型转换的宏定义之一。这个宏用于检查一个给定的 GObjectClass 结构体是否与指定的 GType 类型相匹配，并进行相应的类型转换。这个宏通常用于在 GObject 的类型系统中进行类型安全的操作。
+8.  **G_TYPE_CHECK_CLASS_CAST**: GLib 开发中用于类型转换的宏定义之一。这个宏用于检查一个给定的 GObjectClass 结构体是否与指定的 GType 类型相匹配，并进行相应的类型转换。这个宏通常用于在 GObject 的类型系统中进行类型安全的操作。
 
-    函数原形：
+    函数原形: 
     ```
     G_TYPE_CHECK_CLASS_CAST(g_class, g_type, c_type)
     ```
-    参数说明：
-    -   g_class：需要检查的 GObjectClass 结构体。
-    -   g_type：目标类的 GType。
-    -   c_type：目标类的结构体类型。
+    参数说明: 
+    -   g_class: 需要检查的 GObjectClass 结构体。
+    -   g_type: 目标类的 GType。
+    -   c_type: 目标类的结构体类型。
 
-    代码示例【[完整代码示例](./glib-main/main.c)】：
+    代码示例【[完整代码示例](./glib-main/main.c)】: 
     ```c
     // base_obj.h
     ...
@@ -408,17 +408,17 @@ struct  _GObjectClass
 };
 ```
 
-_GObjectClass结构体成员：
+_GObjectClass结构体成员: 
 
-1.  g_type_class:
+1.  **g_type_class**:
     -   类型: GTypeClass
     -   描述: 用于存储 GObject 类的类型信息。GObject 类是 GObject 类型系统中的基本类型，g_type_class 可以用于访问或操作该类的类型信息。
 
-2.  construct_properties:
+2.  **construct_properties**:
     -   类型: GSList *
-    -   描述: ：这是一个指向 GSList 的指针，GSList 是一个单链表结构，用于存储构造属性（construct properties）。构造属性是在创建对象时设置的属性，通常用于初始化对象的状态。通过 construct_properties 列表，可以将一组属性关联到对象的构造过程中。
+    -   描述: : 这是一个指向 GSList 的指针，GSList 是一个单链表结构，用于存储构造属性（construct properties）。构造属性是在创建对象时设置的属性，通常用于初始化对象的状态。通过 construct_properties 列表，可以将一组属性关联到对象的构造过程中。
 
-3.  constructor:
+3.  **constructor**:
     -   类型: GObject* ()(GType, guint, GObjectConstructParam)
     -   描述: 构造函数指针，用于实例化 GObject 类型的对象。
     -   参数:
@@ -427,7 +427,7 @@ _GObjectClass结构体成员：
         -   construct_properties: 构造函数需要的属性列表。
     -   返回值: 新创建的 GObject 类型的对象的指针。
 
-4.  set_property:
+4.  **set_property**:
     -   类型: void ()(GObject, guint, const GValue*, GParamSpec*)
     -   描述: 设置对象属性的函数指针。
     -   参数:
@@ -436,7 +436,7 @@ _GObjectClass结构体成员：
         -   value: 属性的值。
         -   pspec: 属性的参数规范。
 
-5.  get_property:
+5.  **get_property**:
     -   类型: void ()(GObject, guint, GValue*, GParamSpec*)
     -   描述: 获取对象属性的函数指针。
     -   参数:
@@ -445,19 +445,19 @@ _GObjectClass结构体成员：
         -   value: 存储属性值的 GValue 结构体指针。
         -   pspec: 属性的参数规范。
 
-6.  dispose:
+6.  **dispose**:
     -   类型: void ()(GObject)
     -   描述: dispose 方法用于释放对象所拥有的资源，但是并不销毁对象本身。通常在此方法中进行资源的清理、断开连接、解除订阅等操作。调用 g_object_unref() 函数时会自动调用 dispose 方法，但也可以手动调用该方法。
 
-7.  finalize:
+7.  **finalize**:
     -   类型: void ()(GObject)
     -   描述: finalize 方法是在对象的引用计数为0时自动调用的。它用于执行对象的最终化操作，例如释放内存、销毁相关的资源等。finalize 方法是 GObject 类的虚拟方法，可以在子类中对其进行重写以添加自定义的最终化逻辑。通过g_object_ref()可以增加引用计数。
 
-    >   dispose和finalize的区别：
+    >   dispose和finalize的区别: 
     >   -   dispose 方法主要用于释放对象所拥有的资源，而不涉及对象自身的销毁。
     >   -   finalize 方法用于对象的最终化操作，在对象被销毁之前执行，包括释放对象自身所占用的内存和资源。
 
-8.  dispatch_properties_changed:
+8.  **dispatch_properties_changed**:
     -   类型: void ()(GObject, guint, GParamSpec**)
     -   描述: 在对象的属性发生改变时调用的函数指针。用于发送属性改变的信号。
     -   参数:
@@ -465,27 +465,27 @@ _GObjectClass结构体成员：
         -   n_pspecs: 发生改变的属性数量。
         -   pspecs: 发生改变的属性的参数规范数组。
 
-9.  notify:
+9.  **notify**:
     -   类型: void ()(GObject, GParamSpec*)
     -   描述: 在对象的属性被修改时调用的函数指针。用于发送属性修改的信号。
     -   参数:
         -   object: 属性被修改的 GObject 对象指针。
         -   pspec: 被修改的属性的参数规范。
 
-10. constructed:
+10. **constructed**:
     -   类型: void ()(GObject)
     -   描述: 对象构造完成后调用的函数指针。可以在此函数中执行初始化操作或触发其他相关处理。
 
-11. flags:
+11. **flags**:
     -   类型: gsize
     -   描述: 该成员位域标志位，用于存储一些标志信息。可以使用该成员变量来存储与 GObject 类相关的标志或状态信息。它是一个私有成员，一般不做外部调用。
     
-12. pdummy:
+12. **pdummy**:
     -   类型: gpointer[6]
     -   描述: 填充字段，仅用于对齐结构体成员。
 
 ### 3. GObject结构体的介绍
-GObject内部结构是struct _GObject，它是GObject这个库的基础结构。_GObject的内部结构如下：
+GObject内部结构是struct _GObject，它是GObject这个库的基础结构。_GObject的内部结构如下: 
 ```
 struct  _GObject
 {
@@ -496,24 +496,24 @@ struct  _GObject
   GData         *qdata;
 };
 ```
-_GObject结构体成员：
+_GObject结构体成员: 
 
-1.  g_type_instance:
+1.  **g_type_instance**:
         -   类型: GTypeInstance
         -   描述: 用于存储对象的类型信息和实例相关的数据。
 
-2.  ref_count:
+2.  **ref_count**:
     -   类型: volatile guint
     -   描述: 私有成员。用于表示对象的引用计数（reference count）。引用计数是一种内存管理机制，用于跟踪对象被引用的次数。当引用计数变为0时，对象就可以被释放或销毁。
     
-3.  qdata:
+3.  **qdata**:
     -   类型: GData*
     -   描述: 私有成员。用于存储与对象相关的私有数据。GData是GLib库提供的一种数据结构，用于关联任意类型的私有数据到对象上。
 
 ### 4.  GParamSpec的介绍和使用
 GParamSpec 结构体定义了属性的各种属性，例如名称、类型、默认值、范围等。GParamSpec 用于定义和管理 GObject 的属性系统。它的内部结构是GParamSpec。
 
-结构体原形如下：
+结构体原形如下: 
 ```
 struct _GParamSpec
 {
@@ -533,7 +533,7 @@ struct _GParamSpec
 };
 ```
 
-1.  _GParamSpec结构体成员：
+1.  _GParamSpec结构体成员: 
     1.  g_type_instance:
             -   类型: GTypeInstance
             -   描述: GTypeInstance 结构体用于存储 GObject 类型实例的基本信息。
@@ -574,15 +574,15 @@ struct _GParamSpec
         -   类型: guint
         -   描述: 私有成员。属性的排序标识符，用于属性的排序。
 
-    它的作用以及对比普通属性参数的区别如下：
-    1.  提供属性元数据：GParamSpec结构体中包含了属性的各种元数据，如名称、类型、默认值、访问权限等。这些信息可以用于属性的查询、验证和映射等操作。普通的属性只包含属性值本身，而GParamSpec可以提供更多的属性信息。
-    2.  支持属性验证：GParamSpec结构体中可以定义属性的取值范围、约束条件和验证规则。通过使用这些元数据，可以对属性进行验证，以确保属性值的合法性和一致性。
-    3.  支持信号传递：GParamSpec结构体还可以与属性相关联的信号进行关联。这样，当属性的值发生变化时，可以触发相关的信号传递，从而允许其他对象对属性的变化做出响应。
-    4.  提供属性的获取和设置接口：通过GParamSpec结构体，可以定义属性的获取和设置接口，以方便属性值的读取和修改。这样，属性的访问可以通过get和set方法进行，使得属性的操作更加统一和易用。
+    它的作用以及对比普通属性参数的区别如下: 
+    1.  **提供属性元数据**: GParamSpec结构体中包含了属性的各种元数据，如名称、类型、默认值、访问权限等。这些信息可以用于属性的查询、验证和映射等操作。普通的属性只包含属性值本身，而GParamSpec可以提供更多的属性信息。
+    2.  **支持属性验证**: GParamSpec结构体中可以定义属性的取值范围、约束条件和验证规则。通过使用这些元数据，可以对属性进行验证，以确保属性值的合法性和一致性。
+    3.  **支持信号传递**: GParamSpec结构体还可以与属性相关联的信号进行关联。这样，当属性的值发生变化时，可以触发相关的信号传递，从而允许其他对象对属性的变化做出响应。
+    4.  **提供属性的获取和设置接口**: 通过GParamSpec结构体，可以定义属性的获取和设置接口，以方便属性值的读取和修改。这样，属性的访问可以通过get和set方法进行，使得属性的操作更加统一和易用。
 
 2.  GParamSpec的安装
-    1.  g_param_spec_*type* : 用于创建type类型的属性参数。返回的是GParamSpec的指针。一般用于GObject类构造的时候，常用的类型都有对应的函数添加属性。
-        代码示例【[完整代码示例](./glib-main/base_obj.c)】：
+    1.  **g_param_spec_*type*** : 用于创建type类型的属性参数。返回的是GParamSpec的指针。一般用于GObject类构造的时候，常用的类型都有对应的函数添加属性。
+        代码示例【[完整代码示例](./glib-main/base_obj.c)】: 
         ```
         // 添加字符串类型的属性
         obj_properties[PROP_TYPE_STRING] = 
@@ -623,7 +623,7 @@ struct _GParamSpec
                 G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS // 属性的读写标志
         );
         ```
-    2.  g_object_class_install_properties： 
+    2.  **g_object_class_install_properties**: 
         -   类型: void ()(GObjectClass*, guint, GParamSpec**)
         -   描述: 在GObject类中安装属性列表。这个函数将一组属性参数与GObject类进行关联，使得类的实例可以使用这些属性。
         -   参数:
@@ -635,7 +635,7 @@ struct _GParamSpec
         g_object_class_install_properties(klass,_PROPERTY_ENUMS_LAST,obj_properties);
         ```
     
-    3.  g_object_class_install_property：
+    3.  **g_object_class_install_property**: 
         -   类型: void ()(GObjectClass*, guint, GParamSpec*)
         -   描述: 在GObject类中安装属性列表。这个函数将一个属性参数与GObject类进行关联，和g_object_class_install_properties功能一样，区别是它安装单个属性。
         -   参数:
@@ -652,8 +652,8 @@ struct _GParamSpec
 
 3.  GParamSpec值的设置
 
-    GParamSpec值的设置常见的有两个方法可以设置，g_object_set和g_object_set_property：
-    1.  g_object_set:
+    GParamSpec值的设置常见的有两个方法可以设置，g_object_set和g_object_set_property: 
+    1.  **g_object_set**:
         -   类型: void ()(gpointer, const gchar *, ...)
         -   描述: 用于设置对象的属性值,可设置多个。
         -   参数:
@@ -681,7 +681,7 @@ struct _GParamSpec
         g_object_set(G_OBJECT(obj),BASE_PROP_INT,89,BASE_PROP_POINTER,prop_pointer,BASE_PROP_BOXED,point,NULL);
         ```
 
-    2.  g_object_set_property:
+    2.  **g_object_set_property**:
         -   类型: void ()(GObject *, const gchar *, const GValue *)
         -   描述: 用于设置对象的属性值。
         -   参数:
@@ -699,7 +699,7 @@ struct _GParamSpec
         ```
 4.  GParamSpec值的获取
 
-    GParamSpec值的设置常见的有两个方法可以设置，g_object_get和g_object_get_property：
+    GParamSpec值的设置常见的有两个方法可以设置，g_object_get和g_object_get_property: 
     1.  g_object_get:
         -   类型: void ()(gpointer, const gchar *, ...)
         -   描述: 用于获取对象的属性值,可获取多个。
@@ -719,7 +719,7 @@ struct _GParamSpec
         g_log(domain, G_LOG_LEVEL_INFO, "base obj %s = %d", BASE_PROP_INT,val_int);
         g_log(domain, G_LOG_LEVEL_INFO, "base obj self %s = %d\n", BASE_PROP_INT,self->priv->prop_int);
         ```
-    2.  g_object_get_property
+    2.  **g_object_get_property**
         -   类型: void ()(GObject *, const gchar *, GValue *)
         -   描述: 用于设置对象的属性值。
         -   参数:
@@ -739,7 +739,9 @@ struct _GParamSpec
         ```        
     
 ### 5.  signal的介绍和使用
-1.  信号的创建g_signal_new: 
+1.  信号的创建
+
+**g_signal_new**: 
 -   类型: guint ()(const gchar  *, GType, guint, GSignalAccumulator, gpointer, GSignalCMarshaller, GType, guint, ...)
 -   描述: 用于定义一个新的信号。它确定了信号的名称、发送者、标识、参数等属性，并将该信号注册到GObject类型系统中。
 -   参数:
@@ -770,7 +772,9 @@ struct _GParamSpec
     );
     ```
 
-2.  连接信号处理函数g_signal_connect:
+2.  连接信号处理函数
+
+**g_signal_connect**:
 -   类型: gulong ()(gpointer, const gchar *, GCallback, gpointer)
 -   描述: 用于定义一个新的信号。它确定了信号的名称、发送者、标识、参数等属性，并将该信号注册到GObject类型系统中。
 -   参数:
@@ -826,7 +830,7 @@ struct _GParamSpec
     ```
 
 3.  信号的触发
-    1.  g_signal_emit
+    1.  **g_signal_emit**
     -   类型: void ()(gpointer, guint, GQuark, ...)
     -   描述: 用于定义一个新的信号。它确定了信号的名称、发送者、标识、参数等属性，并将该信号注册到GObject类型系统中。
     -   参数:
@@ -851,7 +855,7 @@ struct _GParamSpec
     ```
 
 
-    2.  g_signal_emit_by_name
+    2.  **g_signal_emit_by_name**
     -   类型: void ()(gpointer, const gchar *, ...)
     -   描述: 用于定义一个新的信号。它确定了信号的名称、发送者、标识、参数等属性，并将该信号注册到GObject类型系统中。
     -   参数:
