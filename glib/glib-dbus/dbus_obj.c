@@ -3,12 +3,11 @@
 static const gchar *domain = "DBUS-OBJ";
 
 // BASE_OBJ_TYPE是父类类型
-G_DEFINE_TYPE(DbusObj, dbus_obj, BASE_OBJ_TYPE)
+G_DEFINE_TYPE(DbusObj, dbus_obj, G_TYPE_OBJECT)
 
 static void dbus_obj_init (DbusObj *self)
 {
     g_log(domain, G_LOG_LEVEL_INFO, "dbus obj init!");
-    BaseObj *base = BASE_OBJ(self);
 }
 
 static void dbus_obj_class_init (DbusObjClass *klass)
@@ -20,8 +19,6 @@ static void dbus_obj_class_init (DbusObjClass *klass)
     object_class->constructor = constructor;
 
     // override base_hello
-    BaseObjClass *base_class = BASE_OBJ_CLASS(klass);
-    base_class->base_hello = dbus_hello;
 }
 
 static void dbus_hello (void)
@@ -57,7 +54,5 @@ DbusObj *dbus_obj_new()
     g_log(domain, G_LOG_LEVEL_INFO, "g_type_name(DBUS_OBJ_TYPE) =%s!",g_type_name(DBUS_OBJ_TYPE));
     g_log(domain, G_LOG_LEVEL_INFO, "g_type_name(G_TYPE_FROM_INSTANCE(obj))=%s!",g_type_name(G_TYPE_FROM_INSTANCE(obj)));
 
-    BaseObj *base = BASE_OBJ(obj);
-    g_log(domain, G_LOG_LEVEL_INFO, "obj=0x%p base=0x%p!",obj,base);
     return obj;
 }

@@ -15,6 +15,21 @@
             "command": "cd glib/glib-main && make clean",
             "problemMatcher": [],
         },
+        {
+            "type": "shell",
+            "label": "glib-dbus-make",
+            "command": "cd glib/glib-dbus && make",
+            "problemMatcher": [],
+            "dependsOn": [
+                "glib-dbus-make-clean"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "glib-dbus-make-clean",
+            "command": "cd glib/glib-dbus && make clean",
+            "problemMatcher": [],
+        },
     ],
     "version": "2.0.0"
 }

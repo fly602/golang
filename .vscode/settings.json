@@ -13,6 +13,7 @@
         "gtypes.h": "c",
         "dbus_obj.h": "c",
         "base_obj.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "glib_micros.h": "c"
     }
 }

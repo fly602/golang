@@ -39,6 +39,9 @@ int main(){
     // 设置中文环境
     setlocale(LC_ALL, "");
 
+    // 设置env开启debug
+    setenv("G_MESSAGES_DEBUG", "all", 1);
+
     test_g_new0();
     loop = g_main_loop_new (NULL, TRUE);
     // 创建base_obj

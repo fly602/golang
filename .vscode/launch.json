@@ -5,6 +5,28 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "(gdb) glib_dbus",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/glib/glib-dbus/glib_dbus",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/glib/glib-dbus",
+            "environment": [
+                {
+                    "name": "G_MESSAGES_DEBUG",
+                    "value": "all"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "preLaunchTask": "glib-dbus-make",
+            "sourceFileMap": {
+                "./debian/build/deb/../../../": "/home/uos/dde-go/src/github.com/linuxdeepin/glib2.0/"
+            }
+        },
+        {
             "name": "(gdb) g_main_loop",
             "type": "cppdbg",
             "request": "launch",
