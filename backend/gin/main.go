@@ -104,6 +104,9 @@ func handleV2(c *gin.Context) {
 
 func main() {
 	r := gin.Default()
+	r.Use(gin.BasicAuth(gin.Accounts{
+		"admin": "123456",
+	}))
 	r.LoadHTMLGlob("./temp/*")
 	r.GET("/", handleHello)
 	g1 := r.Group("/v1")
