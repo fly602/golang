@@ -1,4 +1,4 @@
-module github.com/fly602/golang/backend/mongodb/src
+module github.com/fly602/golang/backend/mongodb/simple-example
 
 go 1.17
 
