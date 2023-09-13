@@ -13,7 +13,9 @@ f(n-1)= f(n-2)+f(n-3)
 // 使用递归
 func step(n int) int {
 	fmt.Println("get n=", n)
-	if n == 0 || n == 1 {
+	if n == 2 {
+		return 2
+	} else if n == 1 {
 		return 1
 	}
 	return step(n-1) + step(n-2)
@@ -27,19 +29,21 @@ func step(n int) int {
 */
 var arr []int
 
-func setStep(n int) {
+func stepN(n int) int {
 	if arr[n] == 0 {
 		arr[n] = getStep(n)
 	}
+	return arr[n]
 }
 func getStep(n int) int {
-	if n == 0 || n == 1 {
+	if n == 2 {
+		arr[n] = 2
+		return arr[n]
+	} else if n == 1 {
 		arr[n] = 1
 		return arr[n]
 	}
-	setStep(n - 1)
-	setStep(n - 2)
-	return arr[n-1] + arr[n-2]
+	return stepN(n-1) + stepN(n-2)
 }
 
 func dp(n int) int {
