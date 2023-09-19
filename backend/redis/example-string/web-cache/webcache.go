@@ -2,12 +2,28 @@ package webcache
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 )
+
+func CleanWebCache(cli *redis.Client) {
+	keys, err := cli.Keys(context.Background(), "webpage:*").Result()
+	if err != nil {
+		log.Println("get web cache err")
+		return
+	}
+	for _, key := range keys {
+		_, err = cli.Del(context.Background(), key).Result()
+		if err != nil {
+			log.Println("clean web cache err")
+			return
+		}
+
+	}
+}
 
 func GetWebPageContent(cli *redis.Client, url string) ([]byte, error) {
 	// 生成用于在 Redis 中存储缓存的键
@@ -17,7 +33,7 @@ func GetWebPageContent(cli *redis.Client, url string) ([]byte, error) {
 	cachedContent, err := cli.Get(context.Background(), cacheKey).Bytes()
 	if err == redis.Nil {
 		// 如果缓存不存在，则需要从源获取网页内容
-		fmt.Println("Cache miss. Fetching data from source...")
+		log.Println("Cache miss. Fetching data from source...")
 
 		// 模拟从源获取网页内容的操作
 		// 这里可以使用 HTTP 请求或其他方式获取网页内容
@@ -38,7 +54,7 @@ func GetWebPageContent(cli *redis.Client, url string) ([]byte, error) {
 	}
 
 	// 如果缓存存在，则直接返回缓存的网页内容
-	fmt.Println("Cache hit. Returning cached data...")
+	log.Println("Cache hit. Returning cached data...")
 	return cachedContent, nil
 }
 
