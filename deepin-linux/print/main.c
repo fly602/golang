@@ -7,3 +7,7 @@ void myprintf(const char* fmt, ...){
     printf(fmt,args);
     va_end(args);
 }
+
+int main(){
+    myprintf("=====%s %s\n","aa","bb");
+}

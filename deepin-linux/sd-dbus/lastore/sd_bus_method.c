@@ -58,6 +58,7 @@ int check_caller_auth(sd_bus_message *m, void *userdata){
 	uint32_t uid = 0;
 	struct Agent *agent = NULL;
 	const u_int32_t rootUid = 0;
+	int r = 0;
 
 	if (userdata == NULL){
 		fprintf(stderr, "userdata nil\n");
@@ -71,7 +72,8 @@ int check_caller_auth(sd_bus_message *m, void *userdata){
 	
 	/* Issue the method call and store the respons message in m */
 	agent = (struct Agent *)userdata; 
-	int r = bus_session_call_method(agent->sys_bus,&bus_methods[BUS_METHOD_GET_CONNECTION_USER],&reply,sender);
+	printf("====>sender=%s\n",sender);
+	bus_session_call_method(agent->sys_bus,bus_methods[BUS_METHOD_GET_CONNECTION_USER],&reply,&r,sender);
 	if (r < 0)
 	{
 		fprintf(stderr,  "Failed to issue method call: %s\n", error.message);
@@ -91,39 +93,6 @@ int check_caller_auth(sd_bus_message *m, void *userdata){
 	}
 finish:
 	syslog(LOG_INFO, "GetConnectionUnixUser ret: %d\n", r);
-	sd_bus_error_free(&error);
-	return r < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-}
-
-int bus_session_call_method(sd_bus *bus, sd_bus_method *method,sd_bus_message **reply,...){
-	sd_bus_error error = SD_BUS_ERROR_NULL;
-
-	va_list args;
-    va_start(args, reply);
-		printf("method: id=%d, name=%s, path=%s,if_name=%s, method=%s in_args=%s\n",
-								method->id,
-								method->bus_name,	
-							   method->bus_path,	
-							   method->if_name, 
-							   method->method_name,
-							   method->in_args);
-	/* Issue the method call and store the respons message in m */
-	int r = sd_bus_call_method(bus,
-							   method->bus_name,	
-							   method->bus_path,	
-							   method->if_name, 
-							   method->method_name,			
-							   &error,					
-							   reply,						
-							   method->in_args,
-							   args);
-	va_end(args);
-	if (r < 0)
-	{
-		fprintf(stderr, "to here Failed to issue method call: %s,method: %s\n", error.message,method->method_name);
-		goto finish;
-	}
-finish:
 	sd_bus_error_free(&error);
 	return r < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }
@@ -148,8 +117,7 @@ int bus_eventlog_reportlog(sd_bus_message *m, void *userdata){
 	syslog(LOG_DEBUG,"ReportLog: %s",msg);
 	agent = (Agent *)userdata;
 	/* Issue the method call and store the respons message in m */
-
-	r = bus_session_call_method(agent->session_bus,&bus_methods[BUS_METHOD_LOG_REPORT],&reply,msg);
+	bus_session_call_method(agent->session_bus,bus_methods[BUS_METHOD_LOG_REPORT],&reply,&r,msg);
 	if (r == EXIT_FAILURE){
 		printf("%s %d:=====to here\n",__FILE__,__LINE__);
 		r = -1;
@@ -179,7 +147,7 @@ int bus_notification_close(sd_bus_message *m, void *userdata){
 	syslog(LOG_DEBUG,"ReportLog: %d",id);
 	agent = (struct Agent *)userdata;
 	/* Issue the method call and store the respons message in m */
-	r = bus_session_call_method(agent->session_bus,&bus_methods[BUS_METHOD_NOTIFY_CLOSE],&reply,id);
+	bus_session_call_method(agent->session_bus,bus_methods[BUS_METHOD_NOTIFY_CLOSE],&reply,&r,id);
 	if (r < 0)
 	{
 		fprintf(stderr, "Failed to issue method call: %s\n", error.message);

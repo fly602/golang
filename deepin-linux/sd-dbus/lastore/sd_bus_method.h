@@ -38,6 +38,26 @@ enum BUS_METHOD{
     BUS_METHOD_MAX,
 };
 
+// sd_bus接口调用的封装
+#define bus_session_call_method(bus, method, reply,ret, ...) \
+do{	\
+	sd_bus_error error = SD_BUS_ERROR_NULL;	\
+	int r = sd_bus_call_method(bus, \
+							   method.bus_name, \
+							   method.bus_path,	\
+							   method.if_name, \
+							   method.method_name,	\
+							   &error,		\
+							   reply,	\
+							   method.in_args,\
+							   ##__VA_ARGS__);\
+	if (r < 0){\
+		fprintf(stderr, "to here Failed to issue method call: %s,method: %s\n", error.message,method.method_name);\
+	}\
+	sd_bus_error_free(&error);\
+	*ret = r;\
+}while (0)
+
 // system lastore RegisterAgent接口
 int bus_syslastore_registerAgent(struct Agent *agent,char *path);
 
@@ -45,9 +65,6 @@ int bus_syslastore_registerAgent(struct Agent *agent,char *path);
 int check_caller_auth(sd_bus_message *m, void *userdata);
 // dde-daemon reportlog接口
 int bus_eventlog_reportlog(sd_bus_message *m, void *userdata);
-
-// sd_bus接口调用的封装
-int bus_session_call_method(sd_bus *bus, sd_bus_method *method,sd_bus_message **reply, ...);
 
 // sd-bus接口
 int CloseNotification(sd_bus_message *m, void *userdata, sd_bus_error *ret_error);
