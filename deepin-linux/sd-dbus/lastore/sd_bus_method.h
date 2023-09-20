@@ -39,7 +39,7 @@ enum BUS_METHOD{
 };
 
 // sd_bus接口调用的封装
-#define bus_session_call_method(bus, method, reply,ret, ...) \
+#define bus_call_method(bus, method, reply,ret, ...) \
 do{	\
 	sd_bus_error error = SD_BUS_ERROR_NULL;	\
 	int r = sd_bus_call_method(bus, \
