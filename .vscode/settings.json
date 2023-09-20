@@ -14,6 +14,15 @@
         "dbus_obj.h": "c",
         "base_obj.h": "c",
         "stdio.h": "c",
-        "glib_micros.h": "c"
+        "glib_micros.h": "c",
+        "memory": "c",
+        "istream": "c",
+        "functional": "c",
+        "sd-bus.h": "c",
+        "statvfs.h": "c",
+        "lastore.h": "c",
+        "gsettings.h": "c",
+        "stdlib.h": "c",
+        "sd_bus_method.h": "c"
     }
 }
