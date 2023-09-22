@@ -5,7 +5,7 @@ OBJS=main.o \
 
 TARGET=lastore-agent
 
-CFLAGS = -g -Wall -Wpedantic -Wno-padded -O `pkg-config --cflags --libs libsystemd`
+CFLAGS = -g -Wall -Wpedantic -Wno-padded -O `pkg-config --cflags --libs  glib-2.0 libsystemd`
 
 $(TARGET): $(OBJS)
 	gcc $(CFLAGS) $(OBJS) -o $@

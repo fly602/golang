@@ -12,6 +12,7 @@ struct Agent
 	sd_bus *session_bus;
     sd_bus *sys_bus;
     sd_bus_slot *slot;
+    int is_wayland_session;
 };
 
 typedef struct Agent Agent;

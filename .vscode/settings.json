@@ -23,6 +23,14 @@
         "lastore.h": "c",
         "gsettings.h": "c",
         "stdlib.h": "c",
-        "sd_bus_method.h": "c"
+        "sd_bus_method.h": "c",
+        "sstream": "c",
+        "array": "c",
+        "ostream": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "stdbool.h": "c",
+        "typeinfo": "c"
     }
 }

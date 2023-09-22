@@ -20,10 +20,10 @@ uint64_t queryVFSAvailable(char *path)
 // 添加dbus接口函数和属性PROPERTY
 static const sd_bus_vtable agent_vtable[] = {
     SD_BUS_VTABLE_START(0),
-    SD_BUS_METHOD("CloseNotification", "s", "", CloseNotification, 0),
-    SD_BUS_METHOD("GetManualProxy", "", "s", GetManualProxy, 0),
-    SD_BUS_METHOD("ReportLog", "s", "", ReportLog, 0),
-    SD_BUS_METHOD("SendNotify", "ssssssss", "s", SendNotify, 0),
+    SD_BUS_METHOD("CloseNotification", "u", "", CloseNotification, SD_BUS_VTABLE_UNPRIVILEGED),
+    SD_BUS_METHOD("GetManualProxy", "", "a{ss}", GetManualProxy, SD_BUS_VTABLE_UNPRIVILEGED),
+    SD_BUS_METHOD("ReportLog", "s", "", ReportLog, SD_BUS_VTABLE_UNPRIVILEGED),
+    SD_BUS_METHOD("SendNotify", "susssasa{sv}i", "u", SendNotify, SD_BUS_VTABLE_UNPRIVILEGED),
     SD_BUS_VTABLE_END};
 
 // 初始化lastore
@@ -31,6 +31,10 @@ struct Agent *agent_init()
 {
     agent = (struct Agent *)malloc(sizeof(struct Agent));
     memset(agent, 0, sizeof(struct Agent));
+
+    if (strcmp(getenv("XDG_SESSION_TYPE"),"wayland") == 0){
+        agent->is_wayland_session = 1;
+    }
 
     // 创建sd-bus
     int r = sd_bus_open_user(&agent->session_bus);
@@ -68,7 +72,7 @@ struct Agent *agent_init()
         syslog(LOG_ERR, "failed to issue method call: %s\n", strerror(-r));
         goto out;
     }
-    bus_syslastore_registerAgent(agent,OBJECT_PATH);
+    bus_syslastore_register_agent(agent,OBJECT_PATH);
     return agent;
 
 out:

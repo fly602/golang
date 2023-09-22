@@ -8,6 +8,9 @@ void myprintf(const char* fmt, ...){
     va_end(args);
 }
 
+char *arr[] = {"1","2","3"};
+
 int main(){
     myprintf("=====%s %s\n","aa","bb");
+    printf("%s %d""===>>arr len=\n",__FILE__,__LINE__);
 }
