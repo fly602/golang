@@ -9,7 +9,7 @@ uint64_t queryVFSAvailable(char *path)
     int res = statvfs(path, &fs_info);
     if (!res)
     {
-        syslog(LOG_ERR, "statvfs err");
+        LOG(LOG_ERR, "statvfs err");
         return -1;
     }
     return (uint64_t)fs_info.f_bavail * (uint64_t)fs_info.f_bsize;
@@ -33,20 +33,20 @@ struct Agent *agent_init()
     memset(agent, 0, sizeof(struct Agent));
 
     if (strcmp(getenv("XDG_SESSION_TYPE"),"wayland") == 0){
-        agent->is_wayland_session = 1;
+        agent->is_wayland_session = true;
     }
 
     // 创建sd-bus
     int r = sd_bus_open_user(&agent->session_bus);
     if (r < 0)
     {
-        syslog(LOG_ERR, "failed to connect to system bus: %s\n", strerror(-r));
+        LOG(LOG_ERR, "failed to connect to system bus: %s", strerror(-r));
         goto out;
     }
 
     r = sd_bus_open_system(&agent->sys_bus);
     if (r < 0) {
-        syslog(LOG_ERR, "Failed to connect to system bus: %s\n", strerror(-r));
+        LOG(LOG_ERR, "Failed to connect to system bus: %s", strerror(-r));
         goto out;
     }
     const char *unique_name = NULL;
@@ -54,13 +54,12 @@ struct Agent *agent_init()
     if (r < 0)
     {
         // 处理错误
-        syslog(LOG_ERR, "unique name err\n");
+        LOG(LOG_ERR, "unique name err");
         goto out;
     }
-    syslog(LOG_INFO, "unique name: %s\n", unique_name);
+    LOG(LOG_INFO, "unique name: %s", unique_name);
 
     // 注册dbus函数
-    sd_bus_slot *slot = NULL;
     r = sd_bus_add_object_vtable(agent->sys_bus,
                                  &agent->slot,
                                  OBJECT_PATH,    /* object path */
@@ -69,21 +68,32 @@ struct Agent *agent_init()
                                  agent);
     if (r < 0)
     {
-        syslog(LOG_ERR, "failed to issue method call: %s\n", strerror(-r));
+        LOG(LOG_ERR, "failed to issue method call: %s", strerror(-r));
         goto out;
     }
-    bus_syslastore_register_agent(agent,OBJECT_PATH);
-    return agent;
-
+    r = bus_syslastore_register_agent(agent,OBJECT_PATH);
 out:
-    if (slot)
+    if (r < 0)
     {
-        sd_bus_slot_unref(slot);
+        LOG(LOG_ERR, "failed to register lastore agent: %s", strerror(-r));
+        agent_close(agent);
     }
-    sd_bus_unref(agent->session_bus);
-    sd_bus_unref(agent->sys_bus);
-    free(agent);
-    return NULL;
+    return r < 0 ? NULL : agent ;
+}
+
+// 资源释放
+void agent_close(Agent *agent){
+    if (agent->slot)
+        sd_bus_slot_unref(agent->slot);
+    
+    if (agent->session_bus)
+        sd_bus_unref(agent->session_bus);
+
+    if (agent->sys_bus)
+        sd_bus_unref(agent->sys_bus);
+
+    if (agent)
+        free(agent);
 }
 
 // 启动dbus loop
@@ -96,7 +106,7 @@ void agent_loop(struct Agent *agent)
         r = sd_bus_process(agent->sys_bus, NULL);
         if (r < 0)
         {
-            syslog(LOG_ERR, "failed to process bus: %s\n", strerror(-r));
+            LOG(LOG_ERR, "failed to process bus: %s", strerror(-r));
             goto finish;
         }
         if (r > 0) /* we processed a request, try to process another one, right-away */
@@ -106,16 +116,11 @@ void agent_loop(struct Agent *agent)
         r = sd_bus_wait(agent->sys_bus, (uint64_t)-1);
         if (r < 0)
         {
-            syslog(LOG_ERR, "failed to wait on bus: %s\n", strerror(-r));
+            LOG(LOG_ERR, "failed to wait on bus: %s", strerror(-r));
             goto finish;
         }
     }
 
 finish:
-    if (agent->slot)
-    {
-        sd_bus_slot_unref(agent->slot);
-    }
-    sd_bus_unref(agent->session_bus);
-    free(agent);
+    agent_close(agent);
 }

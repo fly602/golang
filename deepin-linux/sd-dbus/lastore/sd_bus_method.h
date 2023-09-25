@@ -48,8 +48,7 @@ struct sd_bus_method
     char *bus_path;
     char *if_name;
     char *method_name;
-    char *in_args;
-	type_info **types;
+	type_info **in_args;
 };
 
 typedef struct sd_bus_method sd_bus_method;
@@ -96,7 +95,7 @@ int sd_bus_read_dict(sd_bus_message *msg,GHashTable **map);
 
 int sd_bus_set_data(sd_bus_message *msg,sd_bus_method *bus_method,...);
 int sd_bus_set_datav(sd_bus_message *msg,sd_bus_method *bus_method, va_list ap);
-int sd_bus_set_dict(sd_bus_message *msg, GHashTable *map);
+int sd_bus_set_dict(sd_bus_message *msg,char *contents, GHashTable *map);
 
 int bus_call_method(sd_bus *bus, sd_bus_method *bus_method, sd_bus_message **reply, ...);
 // sd-bus接口

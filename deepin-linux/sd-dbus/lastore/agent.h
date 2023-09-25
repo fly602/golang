@@ -6,13 +6,15 @@
 #include <syslog.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include "log.h"
 
 struct Agent
 {
 	sd_bus *session_bus;
     sd_bus *sys_bus;
     sd_bus_slot *slot;
-    int is_wayland_session;
+    bool is_wayland_session;
 };
 
 typedef struct Agent Agent;
@@ -23,4 +25,5 @@ typedef struct Agent Agent;
 struct Agent * agent_init();
 void agent_loop(struct Agent *agent);
 uint64_t queryVFSAvailable(char *path);
+void agent_close(Agent *agent);
 #endif

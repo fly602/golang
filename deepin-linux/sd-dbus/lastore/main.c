@@ -5,6 +5,7 @@
 #include <string.h>
 #include <syslog.h>
 #include "agent.h"
+#include "log.h"
 
 #define PROG_NAME "lastore-agent"
 
@@ -16,7 +17,7 @@ int main(int argc, char *argv[])
 	// 初始化lastore
 	struct Agent *agent = agent_init();
 	if (agent == NULL) {
-		syslog(LOG_ERR, "Init name err\n");
+		LOG(LOG_ERR, "Init %s err",PROG_NAME);
 		return -1;
 	}
 
