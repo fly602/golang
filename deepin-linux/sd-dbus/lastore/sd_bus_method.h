@@ -88,7 +88,7 @@ extern sd_bus_method bus_methods[BUS_METHOD_MAX];
 int bus_syslastore_register_agent(struct Agent *agent,char *path);
 
 // 校验是否是系统调用
-int check_caller_auth(sd_bus_message *m, void *userdata);
+int check_caller_auth(sd_bus_message *m, Agent *agent);
 int sd_bus_message_get_datav(sd_bus_message *msg, va_list ap);
 int sd_bus_message_get_data(sd_bus_message *msg,...);
 int sd_bus_read_dict(sd_bus_message *msg,GHashTable **map);

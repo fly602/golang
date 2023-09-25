@@ -530,23 +530,16 @@ finish:
 		sd_bus_message_unref(msg);
 
 	sd_bus_error_free(&error);
-	return r < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+	return r;
 }
 
-int check_caller_auth(sd_bus_message *m, void *userdata)
+int check_caller_auth(sd_bus_message *m, Agent *agent)
 {
-	sd_bus_error error = SD_BUS_ERROR_NULL;
 	sd_bus_message *reply = NULL;
 	uint32_t uid = 0;
-	struct Agent *agent = NULL;
 	const u_int32_t rootUid = 0;
 	int r = 0;
 
-	if (userdata == NULL)
-	{
-		LOG(LOG_ERR, "userdata nil");
-		return EXIT_FAILURE;
-	}
 	const char *sender = sd_bus_message_get_sender(m);
 	if (sender == NULL)
 	{
@@ -555,28 +548,25 @@ int check_caller_auth(sd_bus_message *m, void *userdata)
 	}
 
 	/* Issue the method call and store the respons message in m */
-	agent = (Agent *)userdata;
-	bus_call_method(agent->sys_bus, &bus_methods[BUS_METHOD_GET_CONNECTION_USER], &reply, sender);
+	r = bus_call_method(agent->sys_bus, &bus_methods[BUS_METHOD_GET_CONNECTION_USER], &reply, sender);
 	if (r < 0)
 	{
-		LOG(LOG_ERR, "Failed to issue method call: %s", error.message);
-		goto finish;
+		LOG(LOG_ERR, "Failed to call method %s: %s",bus_methods[BUS_METHOD_GET_CONNECTION_USER].method_name, strerror(-r));
+		return r;
 	}
 
 	r = sd_bus_message_get_data(reply, &uid);
 	if (r < 0)
 	{
-		LOG(LOG_ERR, "Failed to read method call reply: %s", error.message);
-		goto finish;
+		LOG(LOG_ERR, "Failed to read method call reply: %s", strerror(-r));
+		return r;
 	}
 	if (uid != rootUid)
 	{
 		LOG(LOG_ERR, "not allow %s call this method", sender);
-		goto finish;
+		return r;
 	}
-finish:
-	sd_bus_error_free(&error);
-	return r < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+	return r;
 }
 
 int CloseNotification(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
@@ -585,35 +575,42 @@ int CloseNotification(sd_bus_message *m, void *userdata, sd_bus_error *ret_error
 	sd_bus_message *reply = NULL;
 	struct Agent *agent = NULL;
 	uint32_t id = 0;
+	int r = 0;
 
 	LOG(LOG_DEBUG, "CloseNotification");
-	if (check_caller_auth(m, userdata) != EXIT_SUCCESS)
-	{
-		return EXIT_FAILURE;
-	}
-
 	if (userdata == NULL)
 	{
 		LOG(LOG_ERR, "userdata nil");
-		return EXIT_FAILURE;
-	}
-	int r = sd_bus_message_get_data(m, &id);
-	if (r < 0)
-	{
-		LOG(LOG_ERR, "Failed to read msg: %s", error.message);
+		sd_bus_error_set(&error,SD_BUS_ERROR_FAILED,"Data nil");
 		goto finish;
 	}
-	LOG(LOG_DEBUG, "ReportLog: %d", id);
 	agent = (struct Agent *)userdata;
+
+	r = check_caller_auth(m, agent);
+	if (r < 0)
+	{
+		sd_bus_error_setf(&error,SD_BUS_ERROR_ACCESS_DENIED,"Not allow %s call this method: %s",sd_bus_message_get_sender(m),strerror(-r));
+		goto finish;
+	}
+
+	r = sd_bus_message_get_data(m, &id);
+	if (r < 0)
+	{
+		sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to read msg: %s",strerror(-r));
+		goto finish;
+	}
 	/* Issue the method call and store the respons message in m */
 	bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_NOTIFY_CLOSE], &reply, id);
 	if (r < 0)
 	{
-		LOG(LOG_ERR, "Failed to issue method call: %s", error.message);
+		sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED,"Failed to issue method call: %s",strerror(-r));
 		goto finish;
 	}
 	return sd_bus_reply_method_return(m, NULL);
 finish:
+	if (error.name != NULL){
+		r = sd_bus_reply_method_error(m,&error);
+	}
 	sd_bus_error_free(&error);
 	return r;
 }
@@ -630,38 +627,44 @@ int GetManualProxy(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 	sd_bus_message *dict_array_msg = NULL;
 
 	LOG(LOG_DEBUG, "GetManualProxy");
-	if (check_caller_auth(m, userdata) != EXIT_SUCCESS)
-	{
-		return EXIT_FAILURE;
-	}
-
 	if (userdata == NULL)
 	{
 		LOG(LOG_ERR, "userdata nil");
-		return EXIT_FAILURE;
+		sd_bus_error_set(&error,SD_BUS_ERROR_FAILED,"Data nil");
+		goto finish;
+	}
+	agent = (struct Agent *)userdata;
+
+	r = check_caller_auth(m, agent);
+	if (r < 0)
+	{
+		sd_bus_error_setf(&error,SD_BUS_ERROR_ACCESS_DENIED,"Not allow %s call this method: %s",sd_bus_message_get_sender(m),strerror(-r));
+		goto finish;
 	}
 
-	agent = (struct Agent *)userdata;
 	/* Issue the method call and store the respons message in m */
-	bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_NETWORK_GET_PROXYMETHOD], &reply);
+	r = bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_NETWORK_GET_PROXYMETHOD], &reply);
 	if (r < 0 || reply == NULL)
 	{
-		LOG(LOG_ERR, "Failed to issue method call: %s", error.message);
+		sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED,"Failed to issue method call %s: %s",
+				bus_methods[BUS_METHOD_NETWORK_GET_PROXYMETHOD].method_name,
+				strerror(-r));
 		goto finish;
 	}
 
 	r = sd_bus_message_get_data(reply, &method);
-	LOG(LOG_DEBUG, "get porxy method: %s", method);
+	LOG(LOG_DEBUG, "Get porxy method: %s", method);
 	if (r < 0 || method == NULL)
 	{
-		LOG(LOG_ERR, "Failed to read msg: %s", error.message);
+		sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to read msg: %s", strerror(-r));
 		goto finish;
 	}
 
 	if (strcmp(method, "manual") != 0)
 	{
 		LOG(LOG_INFO, "only support manual proxy");
-		return sd_bus_error_setf(ret_error, SD_BUS_ERROR_FAILED, "only support manual proxy.");
+		sd_bus_error_set(&error,SD_BUS_ERROR_FAILED, "Only support manual proxy.");
+		goto finish;
 	}
 	char *proxy_types[] = {
 		PROXY_TYPE_HTTP, PROXY_TYPE_HTTPS, PROXY_TYPE_FTP, PROXY_TYPE_SOCKS};
@@ -669,8 +672,8 @@ int GetManualProxy(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 	r = sd_bus_message_new_method_return(m, &dict_array_msg);
 	if (r < 0)
 	{
-		LOG(LOG_ERR, "Failed to create array: %s", strerror(-r));
-		return r;
+		sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to new method: %s", strerror(-r));
+		goto finish;
 	}
 
 	// 存储到map中
@@ -679,11 +682,11 @@ int GetManualProxy(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 	for (int i = 0; i < sizeof(proxy_types) / sizeof(proxy_types[0]); i++)
 	{
 		// dbus调用network getproxy
-		bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_NETWORK_GET_PROXY], &reply, proxy_types[i]);
+		r = bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_NETWORK_GET_PROXY], &reply, proxy_types[i]);
 		if (r < 0)
 		{
-			LOG(LOG_ERR, "Failed to call method, %s", error.message);
-			goto finish;
+			LOG(LOG_WARNING, "Failed to call method, %s", strerror(-r));
+			continue;
 		}
 		char *host = NULL;
 		char *port = NULL;
@@ -691,14 +694,14 @@ int GetManualProxy(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 		r = sd_bus_message_get_data(reply, &host, &port);
 		if (r < 0)
 		{
-			LOG(LOG_ERR, "Failed to get reply, %s", error.message);
+			LOG(LOG_WARNING, "Failed to get reply, %s", strerror(-r));
 			continue;
 		}
 		// dbus调用network GetProxyAuthentication
-		bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_NETWORK_GET_PROXY_AUTH], &reply, proxy_types[i]);
+		r = bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_NETWORK_GET_PROXY_AUTH], &reply, proxy_types[i]);
 		if (r < 0)
 		{
-			LOG(LOG_ERR, "Failed to call method, %s", error.message);
+			LOG(LOG_WARNING, "Failed to call method, %s", strerror(-r));
 			goto finish;
 		}
 		char *usr = NULL;
@@ -708,7 +711,7 @@ int GetManualProxy(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 		r = sd_bus_message_get_data(reply, &usr, &pwd, &enable);
 		if (r < 0)
 		{
-			LOG(LOG_ERR, "Failed to get reply, %s", error.message);
+			LOG(LOG_WARNING, "Failed to get reply, %s", strerror(-r));
 			continue;
 		}
 		// 添加键值对到 Dict 中
@@ -737,17 +740,20 @@ int GetManualProxy(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 	r = sd_bus_set_dict(dict_array_msg, "{ss}", map);
 	if (r < 0)
 	{
-		LOG(LOG_ERR, "Failed to get reply, %s", error.message);
+		sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to get reply, %s", strerror(-r));
 		goto finish;
 	}
 	// 响应成功，并将 a{ss} 数据结构作为返回值
-	return sd_bus_send(NULL, dict_array_msg, NULL);
+	r = sd_bus_send(NULL, dict_array_msg, NULL);
 finish:
+	if (error.name != NULL){
+		r = sd_bus_reply_method_error(m,&error);
+	}
 	if (dict_array_msg)
 		sd_bus_message_unref(dict_array_msg);
 
 	sd_bus_error_free(&error);
-	return r;
+	return r < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 int ReportLog(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
@@ -756,38 +762,46 @@ int ReportLog(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 	sd_bus_message *reply = NULL;
 	Agent *agent = NULL;
 	char *msg = NULL;
+	int r = 0;
+	
+	// 读取入参
+	r = sd_bus_message_get_data(m, &msg);
+	if (r < 0 || msg == NULL)
+	{
+		sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED,"Failed to get data:%s",strerror(-r));
+		goto finish;
+	}
+	LOG(LOG_DEBUG, "ReportLog msg: %s", msg);
 
 	if (userdata == NULL)
 	{
 		LOG(LOG_ERR, "userdata nil");
-		return EXIT_FAILURE;
-	}
-
-	// 读取入参
-	int r = sd_bus_message_get_data(m, &msg);
-	if (r < 0 || msg == NULL)
-	{
-		LOG(LOG_ERR, "Failed to read msg: %s", error.message);
+		sd_bus_error_set(&error,SD_BUS_ERROR_FAILED,"Data nil");
 		goto finish;
 	}
-	LOG(LOG_DEBUG, "report log, msg: %s", msg);
+	agent = (struct Agent *)userdata;
 
-	if (check_caller_auth(m, userdata) != EXIT_SUCCESS)
+	r = check_caller_auth(m, agent);
+	if (r < 0)
 	{
-		return EXIT_FAILURE;
+		sd_bus_error_setf(&error,SD_BUS_ERROR_ACCESS_DENIED,"Not allow %s call this method: %s",sd_bus_message_get_sender(m),strerror(-r));
+		goto finish;
 	}
 
-	agent = (Agent *)userdata;
 	/* Issue the method call and store the respons message in m */
-	bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_LOG_REPORT], &reply, msg);
-	if (r == EXIT_FAILURE)
+	r = bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_LOG_REPORT], &reply, msg);
+	if (r < 0)
 	{
-		r = -1;
+		sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED,"Failed call method %s: %s",sd_bus_message_get_sender(m),strerror(-r));
+		goto finish;
 	}
 	r = sd_bus_reply_method_return(m, NULL);
 finish:
+	if (error.name != NULL){
+		r = sd_bus_reply_method_error(m,&error);
+	}
 	sd_bus_error_free(&error);
-	return r;
+	return r < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 int SendNotify(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
@@ -803,29 +817,33 @@ int SendNotify(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 	char **actions_array = NULL;
 	GHashTable *hints_dict = NULL;
 	int32_t expire_timeout;
+	int r = 0;
 
 	LOG(LOG_DEBUG, "SendNotify");
 
 	if (userdata == NULL)
 	{
 		LOG(LOG_ERR, "userdata nil");
-		return EXIT_FAILURE;
+		sd_bus_error_set(&error,SD_BUS_ERROR_FAILED,"Data nil");
+		goto finish;
 	}
 	agent = (Agent *)userdata;
 
-	if (check_caller_auth(m, userdata) != EXIT_SUCCESS)
-	{
-		return EXIT_FAILURE;
-	}
-	int r = sd_bus_message_get_data(m, &app_name, &replaces_id, &app_icon, &summary, &body, &actions_array, &hints_dict, &expire_timeout);
+	r = check_caller_auth(m, userdata);
 	if (r < 0)
 	{
-		LOG(LOG_ERR, "Failed to get data: %s", strerror(-r));
+		sd_bus_error_setf(&error,SD_BUS_ERROR_ACCESS_DENIED,"Not allow %s call this method: %s",sd_bus_message_get_sender(m),strerror(-r));
+		goto finish;
+	}
+	r = sd_bus_message_get_data(m, &app_name, &replaces_id, &app_icon, &summary, &body, &actions_array, &hints_dict, &expire_timeout);
+	if (r < 0)
+	{
+		sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED,"Failed to read msg: %s",strerror(-r));
 		goto finish;
 	}
 	LOG(LOG_INFO, "receive notify from lastore daemon, app name: %s", app_name);
 
-	int need_send = 1;
+	bool need_send = true;
 	if (strcmp(app_name, UPDATE_NOTIFY_SHOW_OPTIONAL) == 0)
 	{
 		memset(app_name, 0, strlen(app_name));
@@ -833,17 +851,17 @@ int SendNotify(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 		// 只有当控制中心获取焦点,且控制中心当前为更新模块时,不发通知
 		if (agent->is_wayland_session)
 		{
-			bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_WM_ACTIVEWINDOW], &reply);
+			r = bus_call_method(agent->session_bus, &bus_methods[BUS_METHOD_WM_ACTIVEWINDOW], &reply);
 			if (r < 0)
 			{
-				LOG(LOG_ERR, "Failed to call method: %s", error.message);
+				sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to call method: %s",strerror(-r));
 				goto finish;
 			}
 			uint32_t win_id = 0;
-			int r = sd_bus_message_get_data(m, &win_id);
+			r = sd_bus_message_get_data(reply, &win_id);
 			if (r < 0)
 			{
-				LOG(LOG_ERR, "Failed to read msg: %s", error.message);
+				sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to get data: %s",strerror(-r));
 				goto finish;
 			}
 			char win_path[128] = {0};
@@ -859,14 +877,14 @@ int SendNotify(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 								&reply);
 			if (r < 0)
 			{
-				LOG(LOG_ERR, "to here Failed to issue method call: %s,method: %s", error.message, "AppId");
+				sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to call method %s: %s", bus_method.method_name, strerror(-r));
 				goto finish;
 			}
 			char *win_name = NULL;
 			r = sd_bus_message_get_data(reply, &win_name);
 			if (r < 0)
 			{
-				LOG(LOG_ERR, "Failed to read msg: %s", error.message);
+				sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to get data: %s", strerror(-r));
 				goto finish;
 			}
 			if (strstr(win_name, "dde-control-center") != NULL)
@@ -882,19 +900,19 @@ int SendNotify(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 											   &cur_mod);
 				if (r < 0)
 				{
-					LOG(LOG_ERR, "to here Failed to issue get property: %s,property: %s", error.message, "CurrentModule");
+					sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to issue get property %s: %s", "CurrentModule",strerror(-r));
 					goto finish;
 				}
 				if (strcmp(cur_mod, "update") == 0)
 				{
 					LOG(LOG_INFO, "update module of dde-control-center is in the foreground, don't need send notify");
-					need_send = 0;
+					need_send = false;
 				}
 			}
 			else if (strstr(win_name, "dde-lock") != NULL)
 			{
 				// 前台应用在模态更新界面时,不发送通知(TODO: 如果后台更新时发生了锁屏，需要增加判断是否发通知)
-				need_send = 0;
+				need_send = false;
 			}
 		}
 		else
@@ -905,7 +923,7 @@ int SendNotify(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 			FILE *fp = popen(command, "r");
 			if (fp == NULL)
 			{
-				LOG(LOG_ERR, "Failed to run command: %s", error.message);
+				sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to run command: %s",command);
 				goto finish;
 			}
 
@@ -926,20 +944,20 @@ int SendNotify(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 												   &cur_mod);
 					if (r < 0)
 					{
-						LOG(LOG_ERR, "to here Failed to issue get property: %s,property: %s", error.message, "CurrentModule");
+						sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to issue get property %s: %s", "CurrentModule",strerror(-r));
 						pclose(fp);
 						goto finish;
 					}
 					if (strcmp(cur_mod, "update") == 0)
 					{
 						LOG(LOG_INFO, "update module of dde-control-center is in the foreground, don't need send notify");
-						need_send = 0;
+						need_send = false;
 					}
 				}
 				else if (strstr(buffer, "dde-lock") != NULL)
 				{
 					// 前台应用在模态更新界面时,不发送通知(TODO: 如果后台更新时发生了锁屏，需要增加判断是否发通知)
-					need_send = 0;
+					need_send = false;
 				}
 			}
 
@@ -964,12 +982,15 @@ int SendNotify(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 		r = sd_bus_message_get_data(reply, &id);
 		if (r < 0)
 		{
-			LOG(LOG_ERR, "Failed to read msg: %s", strerror(-r));
+			sd_bus_error_setf(&error,SD_BUS_ERROR_FAILED, "Failed to read msg: %s", strerror(-r));
 			goto finish;
 		}
 		r = sd_bus_reply_method_return(m, "u", id);
 	}
 finish:
+	if (error.name != NULL){
+		r = sd_bus_reply_method_error(m,&error);
+	}
 	if (hints_dict)
 		g_hash_table_destroy(hints_dict);
 
