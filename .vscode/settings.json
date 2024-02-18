@@ -31,6 +31,17 @@
         "type_traits": "c",
         "utility": "c",
         "stdbool.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "scrnsaver.h": "c",
+        "xlib.h": "c",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "ddcutil_c_api.h": "c",
+        "xrandr.h": "c"
     }
 }
