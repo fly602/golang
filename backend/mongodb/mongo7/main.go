@@ -22,14 +22,49 @@ type User struct {
 
 var users []User
 
+var client *mongo.Client
+
+var tUser *mongo.Collection
+
+func getUserCollection(ctx context.Context) *mongo.Collection {
+	var err error
+	if client == nil {
+		client, err = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+		if err != nil {
+			log.Panicln(err)
+		}
+	}
+	if tUser == nil {
+		tUser = client.Database("user").Collection("users")
+	}
+	return tUser
+}
+
+func findIndex(cursor *mongo.Cursor, name string) bool {
+	for {
+		if cursor.TryNext(context.Background()) {
+			var index bson.M
+			if err := cursor.Decode(&index); err != nil {
+				log.Panicln(err)
+			}
+			if index["name"] == name {
+				log.Println("index found:", index)
+				return true
+			}
+			log.Println("get index:", index)
+		} else {
+			break
+		}
+		if err := cursor.Err(); err != nil {
+			log.Panicln(err)
+		}
+	}
+	return false
+}
+
 func main() {
 	ctx := context.Background()
-	// 使用URI建立连接
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
-	if err != nil {
-		log.Panicln(err)
-	}
-
+	getUserCollection(ctx)
 	tUser := client.Database("user").Collection("users")
 	// 修改版本号字段
 	_, _ = tUser.UpdateMany(ctx, bson.D{
@@ -147,7 +182,26 @@ func main() {
 		log.Println("InsertOne success", one.InsertedID)
 	}
 
-	_, _ = tUser.UpdateMany(ctx, bson.D{}, bson.D{
+	_, _ = tUser.UpdateMany(ctx, bson.D{
+		{
+			"$or", bson.A{
+				bson.D{
+					{
+						"redundantField", bson.D{
+							{
+								"$exists", false,
+							},
+						},
+					},
+				},
+				bson.D{
+					{
+						"redundantField", "",
+					},
+				},
+			},
+		},
+	}, bson.D{
 		{
 			"$set", bson.M{"redundantField": "This field will deleted"},
 		},
@@ -157,6 +211,37 @@ func main() {
 	//		"$unset", bson.M{"redundantField": ""},
 	//	},
 	//})
+
+	// 创建索引
+	c_index, err := tUser.Indexes().List(ctx, nil)
+	if err != nil {
+		log.Panicln(err)
+	}
+	defer c_index.Close(ctx)
+	if !findIndex(c_index, "name_1_age_1") {
+		key, err := tUser.Indexes().CreateOne(ctx, mongo.IndexModel{
+			Keys: bson.D{{"name", 1}, {"age", 1}},
+		}, nil)
+		if err != nil {
+			log.Panicln(err)
+		}
+		log.Println("create index:", key)
+	}
+
+	if findIndex(c_index, "name_1") {
+		_, err := tUser.Indexes().DropOne(ctx, "name_1", nil)
+		if err != nil {
+			log.Panicln(err)
+		}
+		log.Println("drop index:", "name_1")
+	}
+	// Retrieves and prints the number of documents in the collection
+	// that match the filter
+	count, err := tUser.EstimatedDocumentCount(ctx, nil)
+	if err != nil {
+		log.Panicln(err)
+	}
+	log.Println("count documents:", count)
 	// 关闭连接
 	defer log.Println("Disconnect MongoDB.", client.Disconnect(ctx))
 	// ping测试连接是否可用
