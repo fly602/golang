@@ -8,7 +8,7 @@ IP_ADDR_NODE2="192.168.3.182"
 GATEWAY="192.168.3.1"
 
 print_usage() {
-    echo "Usage: $0 [master | node <id>] [--help]"
+    echo "Usage: $0 [master | node <id> reset] [--help]"
 }
 
 # 判断参数个数
@@ -79,9 +79,9 @@ EOF
 
 set_static_network(){
   # 配置网络
-  sed -i "/^iface \([^ ]*\) inet dhcp$/s/dhcp/static\
-      address $IP_ADDR_CURRENT\
-      netmask 255.255.255.0\
+  sed -i "/^iface \([^ ]*\) inet dhcp$/s/dhcp/static\\
+      address $IP_ADDR_CURRENT\\
+      netmask 255.255.255.0\\
       gateway $GATEWAY/" /etc/network/interfaces
   echo "静态网络配置... 完成"
 }
@@ -138,6 +138,12 @@ config_k8s(){
   echo "k8s环境初始化... 完成"
 }
 
+reset(){
+  echo "y" | kubeadm reset --cri-socket unix:///var/run/cri-dockerd.sock
+  rm -rf /etc/cni/net.d
+  echo "k8s环境重置... 完成"
+}
+
 main(){
   # 关闭虚拟内存
   check_root
@@ -154,6 +160,10 @@ main(){
 case "$1" in
   --help)
     print_usage
+    exit 0
+    ;;
+  reset)
+    reset
     exit 0
     ;;
   master)
