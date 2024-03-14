@@ -57,6 +57,9 @@ preinstall_debs(){
   fi
   apt install -y ./cri-dockerd_0.3.10.3-0.debian-bookworm_amd64.deb
 
+  sed -i 's|^ExecStart=/usr/bin/cri-dockerd --container-runtime-endpoint fd://|ExecStart=/usr/bin/cri-dockerd --pod-infra-container-image=registry.aliyuncs.com/google_containers/pause:3.9 --container-runtime-endpoint fd://|' /lib/systemd/system/cri-docker.service
+
+
   cat > /etc/docker/daemon.json <<EOF
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
@@ -69,13 +72,14 @@ preinstall_debs(){
 EOF
   systemctl daemon-reload
   systemctl restart docker
-  sudo systemctl enable docker
+  systemctl enable docker
+  systemctl restart cri-docker.service
   echo "安装前置软件包，docker安装部署... 完成"
 }
 
 set_static_network(){
   # 配置网络
-  sed -i "/^iface \([^ ]*\) inet static$/s/dhcp/static\
+  sed -i "/^iface \([^ ]*\) inet dhcp$/s/dhcp/static\
       address $IP_ADDR_CURRENT\
       netmask 255.255.255.0\
       gateway $GATEWAY/" /etc/network/interfaces
@@ -126,6 +130,7 @@ config_k8s(){
   sed -i "s/advertiseAddress:.*$/advertiseAddress: $IP_ADDR_MASTER/" kubeadm.conf
   # 替换 bindPort 的值
   sed -i 's/bindPort:.*$/bindPort: 6443/' kubeadm.conf
+  sed -i 's/name: node/name: master/' kubeadm.conf
   kubeadm config images list --config kubeadm.conf
   echo "生成初始化配置... 完成"
   kubeadm config images pull --config kubeadm.conf
