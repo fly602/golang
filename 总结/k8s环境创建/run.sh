@@ -17,6 +17,58 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+create_env(){
+  cat > /etc/k8s-env.sh << EOF
+export K8S_GATEWAY="192.168.3.1"
+export USER_NAME="uos"
+export K8S_LOCAL_NODE="$HOSTNAME"
+export IP_ADDR_MASTER="192.168.3.180"
+export IP_ADDR_NODE1="192.168.3.181"
+export IP_ADDR_NODE2="192.168.3.182"
+EOF
+}
+
+print_env(){
+  echo "当前用户名: $USER_NAME"
+  USER_HOME_DIR=/home/"$USER_NAME"/
+  echo "用户目录:        $USER_HOME_DIR"
+  echo "当前k8s节点:     $K8S_LOCAL_NODE"
+  if [ "$K8S_LOCAL_NODE" == "master" ]; then
+    echo "当前节点IP地址:   $IP_ADDR_MASTER"
+  elif [ "$K8S_LOCAL_NODE" == "node1" ]; then
+    echo "当前节点IP地址:   $IP_ADDR_IP_ADDR_NODE1"
+  elif [ "$K8S_LOCAL_NODE" == "node2" ]; then
+    echo "当前节点IP地址:   $IP_ADDR_IP_ADDR_NODE2"
+  else
+    echo "未知节点，请重新配置节点..."
+    exit 0
+  fi
+}
+
+init_env(){
+  if [ ! -e /etc/k8s-env.sh ]; then
+    touch /etc/k8s-env.sh
+    create_env
+    source /etc/k8s-env.sh
+    USER_HOME_DIR=/home/"$USER_NAME"/
+    echo "生成k8s系统环境变量，请确认是否使用默认如下默认值，如需修改，请按'ctrl c'终止脚本，并修改/etc/k8s-env.sh."
+    print_env
+    for ((i=5; i>=0; i--)); do
+        echo -ne "脚本将在'$i'秒后自动配置...\r"
+        sleep 1  # 等待1秒
+    done
+  else
+    source /etc/k8s-env.sh
+    USER_HOME_DIR=/home/"$USER_NAME"/
+    echo "k8s系统环境变量如下，请确认是否使用该环境.并且将在3秒后进行配置..."
+    print_env
+    for ((i=3; i>=0; i--)); do
+            echo -ne "脚本将在'$i'秒后自动配置...\r"
+            sleep 1  # 等待1秒
+    done
+  fi
+}
+
 set_hosts(){
 hosts=("$IP_ADDR_MASTER master" "$IP_ADDR_NODE1 node1" "$IP_ADDR_NODE2 node2")
 for item in "${hosts[@]}"; do
@@ -48,7 +100,7 @@ EOF
 preinstall_debs(){
   apt update
   # 安装前置软件包
-  apt install -y ssh sudo docker docker-compose curl gnupg zssh
+  apt install -y ssh sudo docker docker-compose curl gnupg zssh wget
   # 启动ssh
   systemctl enable  ssh && systemctl start ssh
 
@@ -111,14 +163,17 @@ install_k8s(){
   # 安装k8s
   apt-get install -y kubelet kubernetes-cni kubeadm kubectl
   kubeadm version
-
-  systemctl enable kubelet
-  systemctl daemon-reload
-  systemctl restart kubelet
   echo "k8s安装部署... 完成"
 }
 
-config_k8s(){
+install_fannel(){
+  if [ -e "kube-flannel.yml" ];then
+    wget -O kube-flannel.yml https://github.com/flannel-io/flannel/releases/download/v0.24.3/kube-flannel.yml
+  fi
+  kubectl apply -f ./kube-flannel.yml
+}
+
+init_k8s(){
   mkdir k8s-init
   cd k8s-init || exit 0
   kubeadm config print init-defaults > kubeadm.conf
@@ -141,19 +196,37 @@ config_k8s(){
 reset(){
   echo "y" | kubeadm reset --cri-socket unix:///var/run/cri-dockerd.sock
   rm -rf /etc/cni/net.d
+  if [ -d k8s-init ]; then
+    rm -rf k8s-init/
+  fi
+  if [ -d .kube/config ]; then
+    rm .kube/config
+  fi
   echo "k8s环境重置... 完成"
+}
+
+config_k8s(){
+  mkdir -p "$USER_HOME_DIR"/.kube
+  cp -i /etc/kubernetes/admin.conf "$USER_HOME_DIR"/.kube/config
+  chown "$(id -u "$USER_NAME")":"$(id -g "$USER_NAME")" "$USER_HOME_DIR"/.kube/config
+  echo "export KUBECONFIG=\$USER_HOME_DIR/admin.conf" >> /etc/profile
+  systemctl daemon-reload
+  systemctl restart kubelet
 }
 
 main(){
   # 关闭虚拟内存
   check_root
+  init_env
   swapoff -a
   set_hosts
   preinstall_debs
   set_static_network
   set_kernel_ipv4
   install_k8s
+  init_k8s
   config_k8s
+  install_fannel
   echo "配置安裝完成，请重启系统..."
 }
 
