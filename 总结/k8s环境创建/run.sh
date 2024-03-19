@@ -26,6 +26,7 @@ export IP_ADDR_MASTER="192.168.3.180"
 export IP_ADDR_NODE1="192.168.3.181"
 export IP_ADDR_NODE2="192.168.3.182"
 EOF
+echo "生成k8s系统环境变量..."
 }
 
 print_env(){
@@ -40,7 +41,7 @@ print_env(){
   elif [ "$K8S_LOCAL_NODE" == "node2" ]; then
     echo "当前节点IP地址:   $IP_ADDR_IP_ADDR_NODE2"
   else
-    echo "未知节点，请重新配置节点..."
+    echo "未知节点，请修改/etc/k8s-env.sh."
     exit 0
   fi
 }
@@ -49,24 +50,15 @@ init_env(){
   if [ ! -e /etc/k8s-env.sh ]; then
     touch /etc/k8s-env.sh
     create_env
-    source /etc/k8s-env.sh
-    USER_HOME_DIR=/home/"$USER_NAME"/
-    echo "生成k8s系统环境变量，请确认是否使用默认如下默认值，如需修改，请按'ctrl c'终止脚本，并修改/etc/k8s-env.sh."
-    print_env
-    for ((i=5; i>=0; i--)); do
-        echo -ne "脚本将在'$i'秒后自动配置...\r"
-        sleep 1  # 等待1秒
-    done
-  else
-    source /etc/k8s-env.sh
-    USER_HOME_DIR=/home/"$USER_NAME"/
-    echo "k8s系统环境变量如下，请确认是否使用该环境.并且将在3秒后进行配置..."
-    print_env
-    for ((i=3; i>=0; i--)); do
-            echo -ne "脚本将在'$i'秒后自动配置...\r"
-            sleep 1  # 等待1秒
-    done
   fi
+  source /etc/k8s-env.sh
+  USER_HOME_DIR=/home/"$USER_NAME"/
+  print_env
+  echo "请确认是否使用该配置环境，如需修改，请按'ctrl c'终止脚本，并修改/etc/k8s-env.sh."
+  for ((i=5; i>=0; i--)); do
+      echo -ne "脚本将在'$i'秒后自动配置...\r"
+      sleep 1  # 等待1秒
+  done
 }
 
 set_hosts(){
