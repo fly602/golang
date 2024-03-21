@@ -6,6 +6,7 @@ IP_ADDR_MASTER="192.168.3.180"
 IP_ADDR_NODE1="192.168.3.181"
 IP_ADDR_NODE2="192.168.3.182"
 GATEWAY="192.168.3.1"
+K8S_LOCAL_NODE="master"
 
 print_usage() {
     echo "Usage: $0 [master | node <id> reset] [--help]"
@@ -19,12 +20,12 @@ fi
 
 create_env(){
   cat > /etc/k8s-env.sh << EOF
-export K8S_GATEWAY="192.168.3.1"
+export K8S_GATEWAY=$GATEWAY
 export USER_NAME="uos"
-export K8S_LOCAL_NODE="$HOSTNAME"
-export IP_ADDR_MASTER="192.168.3.180"
-export IP_ADDR_NODE1="192.168.3.181"
-export IP_ADDR_NODE2="192.168.3.182"
+export K8S_LOCAL_NODE=$K8S_LOCAL_NODE
+export IP_ADDR_MASTER=$IP_ADDR_MASTER
+export IP_ADDR_NODE1=$IP_ADDR_NODE1
+export IP_ADDR_NODE2=$IP_ADDR_NODE2
 EOF
 echo "生成k8s系统环境变量..."
 }
@@ -206,9 +207,46 @@ config_k8s(){
   systemctl restart kubelet
 }
 
+check_args(){
+  case "$1" in
+    --help)
+      print_usage
+      exit 0
+      ;;
+    reset)
+      reset
+      exit 0
+      ;;
+    master)
+      K8S_LOCAL_NODE="$1"
+      IP_ADDR_CURRENT=$IP_ADDR_MASTER
+      ;;
+    node)
+      # 判断参数个数
+      if [ $# -eq 2 ]; then
+          if [ "$2" -eq 1 ]; then
+            IP_ADDR_CURRENT=$IP_ADDR_NODE1
+          elif [ "$2" -eq 2 ]; then
+            IP_ADDR_CURRENT=$IP_ADDR_NODE1
+          else
+            echo "id not found: $1"
+            exit 0
+          fi
+          K8S_LOCAL_NODE="$1""$2"
+          echo "===>>>node: $K8S_LOCAL_NODE"
+      else
+        echo "参数错误"
+        print_usage
+        exit 0
+      fi
+      ;;
+  esac
+}
+
 main(){
   # 关闭虚拟内存
   check_root
+  check_args "$@"
   init_env
   swapoff -a
   set_hosts
@@ -222,35 +260,4 @@ main(){
   echo "配置安裝完成，请重启系统..."
 }
 
-case "$1" in
-  --help)
-    print_usage
-    exit 0
-    ;;
-  reset)
-    reset
-    exit 0
-    ;;
-  master)
-    IP_ADDR_CURRENT=$IP_ADDR_MASTER
-    main
-    ;;
-  node)
-    # 判断参数个数
-    if [ $# -eq 2 ]; then
-        if [ "$2" -eq 1 ]; then
-          IP_ADDR_CURRENT=$IP_ADDR_NODE1
-        elif [ "$2" -eq 2 ]; then
-          IP_ADDR_CURRENT=$IP_ADDR_NODE1
-        else
-          echo "id not found: $1"
-          exit 0
-        fi
-        main
-    else
-      echo "参数错误"
-      print_usage
-      exit 0
-    fi
-    ;;
-esac
+main "$@"
