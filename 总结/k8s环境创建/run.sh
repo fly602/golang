@@ -5,7 +5,7 @@
 IP_ADDR_MASTER="192.168.3.180"
 IP_ADDR_NODE1="192.168.3.181"
 IP_ADDR_NODE2="192.168.3.182"
-GATEWAY="192.168.3.1"
+K8S_GATEWAY="192.168.3.1"
 K8S_LOCAL_NODE="master"
 
 print_usage() {
@@ -20,7 +20,7 @@ fi
 
 create_env(){
   cat > /etc/k8s-env.sh << EOF
-export K8S_GATEWAY=$GATEWAY
+export K8S_GATEWAY=$K8S_GATEWAY
 export USER_NAME="uos"
 export K8S_LOCAL_NODE=$K8S_LOCAL_NODE
 export IP_ADDR_MASTER=$IP_ADDR_MASTER
@@ -31,20 +31,21 @@ echo "生成k8s系统环境变量..."
 }
 
 print_env(){
-  echo "当前用户名: $USER_NAME"
+  echo "当前用户名：        $USER_NAME"
   USER_HOME_DIR=/home/"$USER_NAME"/
-  echo "用户目录:        $USER_HOME_DIR"
-  echo "当前k8s节点:     $K8S_LOCAL_NODE"
+  echo "用户目录：         $USER_HOME_DIR"
+  echo "当前k8s节点:       $K8S_LOCAL_NODE"
   if [ "$K8S_LOCAL_NODE" == "master" ]; then
     echo "当前节点IP地址:   $IP_ADDR_MASTER"
   elif [ "$K8S_LOCAL_NODE" == "node1" ]; then
-    echo "当前节点IP地址:   $IP_ADDR_IP_ADDR_NODE1"
+    echo "当前节点IP地址:   $IP_ADDR_NODE1"
   elif [ "$K8S_LOCAL_NODE" == "node2" ]; then
-    echo "当前节点IP地址:   $IP_ADDR_IP_ADDR_NODE2"
+    echo "当前节点IP地址:   $IP_ADDR_NODE2"
   else
     echo "未知节点，请修改/etc/k8s-env.sh."
     exit 0
   fi
+  echo "当前IP掩码:        $K8S_GATEWAY"
 }
 
 init_env(){
@@ -127,7 +128,7 @@ set_static_network(){
   sed -i "/^iface \([^ ]*\) inet dhcp$/s/dhcp/static\\
       address $IP_ADDR_CURRENT\\
       netmask 255.255.255.0\\
-      gateway $GATEWAY/" /etc/network/interfaces
+      gateway $K8S_GATEWAY/" /etc/network/interfaces
   echo "静态网络配置... 完成"
 }
 
