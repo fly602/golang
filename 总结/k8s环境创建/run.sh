@@ -35,7 +35,7 @@ print_env(){
   echo "用户目录：         $USER_HOME_DIR"
   echo "主节点的IP:        $IP_ADDR_MASTER"
   echo "节点1的IP:         $IP_ADDR_NODE1"
-  echo "节点2的IP:         $IP_ADDR_NODE1"
+  echo "节点2的IP:         $IP_ADDR_NODE2"
   echo "当前IP掩码:        $K8S_GATEWAY"
 }
 
@@ -59,7 +59,7 @@ host_file=/etc/hosts
 sed -i '/^master/d' "$host_file"
 sed -i '/^node1/d' "$host_file"
 sed -i '/^node2/d' "$host_file"
-hosts=("127.0.1.1 master" "$IP_ADDR_MASTER master" "$IP_ADDR_NODE1 node1" "$IP_ADDR_NODE2 node2")
+hosts=("127.0.1.1 $K8S_LOCAL_NODE" "$IP_ADDR_MASTER master" "$IP_ADDR_NODE1 node1" "$IP_ADDR_NODE2 node2")
 for item in "${hosts[@]}"; do
     # 检查是否已经存在相同的记录
     if ! grep -q "$item" "$host_file"; then
@@ -202,10 +202,11 @@ install_k8s(){
 }
 
 install_fannel(){
-  if [ -e "kube-flannel.yml" ];then
+  if [ ! -e "kube-flannel.yml" ];then
     wget -O kube-flannel.yml https://github.com/flannel-io/flannel/releases/download/v0.24.3/kube-flannel.yml
   fi
-  kubectl apply -f ./kube-flannel.yml
+  sudo -u $USER_NAME kubectl apply -f ./kube-flannel.yml
+  echo "k8s网络插件[fannel]安装... 完成"
 }
 
 init_k8s(){
@@ -220,11 +221,11 @@ init_k8s(){
   sed -i "s/advertiseAddress:.*$/advertiseAddress: $IP_ADDR_MASTER/" kubeadm.conf
   # 替换 bindPort 的值
   sed -i 's/bindPort:.*$/bindPort: 6443/' kubeadm.conf
-  sed -i 's/name: node/name: master/' kubeadm.conf
+  sed -i 's/name: node/name: $K8S_LOCAL_NODE/' kubeadm.conf
   kubeadm config images list --config kubeadm.conf
   echo "生成初始化配置... 完成"
   kubeadm config images pull --config kubeadm.conf
-  sudo kubeadm certs renew all --config=kubeadm.yaml
+  kubeadm certs renew all --config=kubeadm.conf
   kubeadm init --config kubeadm.conf
   echo "k8s环境初始化... 完成"
 }
@@ -318,9 +319,11 @@ main(){
   set_static_network
   set_kernel_ipv4
   install_k8s
+  if [ "$K8S_LOCAL_NODE" == "master" ];then
   init_k8s
   config_k8s
   install_fannel
+  fi
   echo "配置安裝完成，请重启系统..."
 }
 
