@@ -205,7 +205,7 @@ install_fannel(){
   if [ -e "kube-flannel.yml" ];then
     wget -O kube-flannel.yml https://github.com/flannel-io/flannel/releases/download/v0.24.3/kube-flannel.yml
   fi
-  kubectl apply -f ./kube-flannel.yml
+  sudo -u $USER_NAME kubectl apply -f ./kube-flannel.yml
 }
 
 init_k8s(){
