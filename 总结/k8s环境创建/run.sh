@@ -22,7 +22,6 @@ create_env(){
   cat > /etc/k8s-env.sh << EOF
 export K8S_GATEWAY=$K8S_GATEWAY
 export USER_NAME="uos"
-export K8S_LOCAL_NODE=$K8S_LOCAL_NODE
 export IP_ADDR_MASTER=$IP_ADDR_MASTER
 export IP_ADDR_NODE1=$IP_ADDR_NODE1
 export IP_ADDR_NODE2=$IP_ADDR_NODE2
@@ -32,19 +31,11 @@ echo "生成k8s系统环境变量..."
 
 print_env(){
   echo "当前用户名：        $USER_NAME"
-  USER_HOME_DIR=/home/"$USER_NAME"/
+  USER_HOME_DIR=/home/"$USER_NAME"
   echo "用户目录：         $USER_HOME_DIR"
-  echo "当前k8s节点:       $K8S_LOCAL_NODE"
-  if [ "$K8S_LOCAL_NODE" == "master" ]; then
-    echo "当前节点IP地址:   $IP_ADDR_MASTER"
-  elif [ "$K8S_LOCAL_NODE" == "node1" ]; then
-    echo "当前节点IP地址:   $IP_ADDR_NODE1"
-  elif [ "$K8S_LOCAL_NODE" == "node2" ]; then
-    echo "当前节点IP地址:   $IP_ADDR_NODE2"
-  else
-    echo "未知节点，请修改/etc/k8s-env.sh."
-    exit 0
-  fi
+  echo "主节点的IP:        $IP_ADDR_MASTER"
+  echo "节点1的IP:         $IP_ADDR_NODE1"
+  echo "节点2的IP:         $IP_ADDR_NODE1"
   echo "当前IP掩码:        $K8S_GATEWAY"
 }
 
@@ -54,7 +45,7 @@ init_env(){
     create_env
   fi
   source /etc/k8s-env.sh
-  USER_HOME_DIR=/home/"$USER_NAME"/
+  USER_HOME_DIR=/home/"$USER_NAME"
   print_env
   echo "请确认是否使用该配置环境，如需修改，请按'ctrl c'终止脚本，并修改/etc/k8s-env.sh."
   for ((i=5; i>=0; i--)); do
@@ -64,15 +55,39 @@ init_env(){
 }
 
 set_hosts(){
-hosts=("$IP_ADDR_MASTER master" "$IP_ADDR_NODE1 node1" "$IP_ADDR_NODE2 node2")
+host_file=/etc/hosts
+sed -i '/^master/d' "$host_file"
+sed -i '/^node1/d' "$host_file"
+sed -i '/^node2/d' "$host_file"
+hosts=("127.0.1.1 master" "$IP_ADDR_MASTER master" "$IP_ADDR_NODE1 node1" "$IP_ADDR_NODE2 node2")
 for item in "${hosts[@]}"; do
     # 检查是否已经存在相同的记录
-    if ! grep -q "$item" /etc/hosts; then
+    if ! grep -q "$item" "$host_file"; then
         # 追加内容到 /etc/hosts 文件
-        echo "$item" | sudo tee -a /etc/hosts
+        echo "$item" | sudo tee -a "$host_file"
     fi
 done
 echo "设置hosts... 完成"
+}
+
+set_hostname(){
+# 获取当前主机名
+current_hostname=$(hostname)
+
+# 检查当前主机名是否为 "master"
+if [ "$current_hostname" != "$K8S_LOCAL_NODE" ]; then
+    echo "当前主机名为 $current_hostname，不是 $K8S_LOCAL_NODE，将修改主机名和 hosts 文件..."
+
+    # 修改主机名
+    sudo hostnamectl set-hostname "$K8S_LOCAL_NODE"
+
+    # 修改 hosts 文件
+    sudo sed -i "s/$current_hostname/$K8S_LOCAL_NODE/g" /etc/hosts
+
+    echo "主机名和 hosts 文件已修改为 $K8S_LOCAL_NODE"
+else
+    echo "当前主机名已经是 $K8S_LOCAL_NODE，无需修改。"
+fi
 }
 
 config_k8s_source(){
@@ -124,12 +139,38 @@ EOF
 }
 
 set_static_network(){
-  # 配置网络
-  sed -i "/^iface \([^ ]*\) inet dhcp$/s/dhcp/static\\
-      address $IP_ADDR_CURRENT\\
-      netmask 255.255.255.0\\
-      gateway $K8S_GATEWAY/" /etc/network/interfaces
-  echo "静态网络配置... 完成"
+# 网络配置文件路径
+interfaces_file="/etc/network/interfaces"
+
+# 检查网络配置文件是否存在
+if [ -f "$interfaces_file" ]; then
+    # 检查是否为静态 IP
+    if grep -Eq "iface [a-zA-Z0-9]+ inet dhcp" "$interfaces_file"; then
+        echo "当前配置为 DHCP，将修改为静态 IP..."
+
+        # 修改配置为静态 IP
+        sudo sed -Ei 's/iface ([a-zA-Z0-9]+) inet dhcp/iface \1 inet static/g' "$interfaces_file"
+    elif grep -Eq "iface [a-zA-Z0-9]+ inet static" "$interfaces_file"; then
+        echo "当前配置为静态 IP，将修改 IP 地址"
+    else
+        echo "当前网络配置不是静态 IP 也不是 DHCP，尝试修复。"
+        echo "allow-hotplug ens33" | tee -a "$interfaces_file" >/dev/null
+        echo "iface ens33 inet static" | tee -a "$interfaces_file" >/dev/null
+    fi
+    sed -i '/^address/d' "$interfaces_file"
+    sed -i '/^netmask/d' "$interfaces_file"
+    sed -i '/^gateway/d' "$interfaces_file"
+    echo "address $IP_ADDR_CURRENT" | tee -a "$interfaces_file" >/dev/null
+    echo "netmask 255.255.255.0" | tee -a "$interfaces_file" >/dev/null
+    echo "gateway $K8S_GATEWAY" | tee -a "$interfaces_file" >/dev/null
+else
+    echo "网络配置文件 $interfaces_file 不存在。"
+    exit 0
+fi
+
+echo "网络配置如下："
+cat /etc/network/interfaces
+echo "静态网络配置... 完成"
 }
 
 set_kernel_ipv4(){
@@ -183,18 +224,37 @@ init_k8s(){
   kubeadm config images list --config kubeadm.conf
   echo "生成初始化配置... 完成"
   kubeadm config images pull --config kubeadm.conf
+  sudo kubeadm certs renew all --config=kubeadm.yaml
   kubeadm init --config kubeadm.conf
   echo "k8s环境初始化... 完成"
 }
 
 reset(){
+  if [ ! -e /etc/k8s-env.sh ]; then
+      echo "/etc/k8s-env.sh不存在，环境可能已经初始化"
+      exit 0
+  else
+    source /etc/k8s-env.sh
+    USER_HOME_DIR=/home/"$USER_NAME"
+  fi
+
+  init_dir_path="$USER_HOME_DIR"/k8s-init
+  config_dir_path="$USER_HOME_DIR"/.kube/
+  pki_dir_path="/var/lib/kubelet/pki/"
+
   echo "y" | kubeadm reset --cri-socket unix:///var/run/cri-dockerd.sock
   rm -rf /etc/cni/net.d
-  if [ -d k8s-init ]; then
-    rm -rf k8s-init/
+  if [ -e "$init_dir_path" ]; then
+    echo "删除$init_dir_path"
+    rm -rf "$init_dir_path"
   fi
-  if [ -d .kube/config ]; then
-    rm .kube/config
+  if [ -e "$config_dir_path" ]; then
+    echo "删除$config_dir_path"
+    rm -rf "$config_dir_path"
+  fi
+
+  if [ -e "$pki_dir_path" ]; then
+    rm -rf "$pki_dir_path"
   fi
   echo "k8s环境重置... 完成"
 }
@@ -203,7 +263,7 @@ config_k8s(){
   mkdir -p "$USER_HOME_DIR"/.kube
   cp -i /etc/kubernetes/admin.conf "$USER_HOME_DIR"/.kube/config
   chown "$(id -u "$USER_NAME")":"$(id -g "$USER_NAME")" "$USER_HOME_DIR"/.kube/config
-  echo "export KUBECONFIG=\$USER_HOME_DIR/admin.conf" >> /etc/profile
+  echo "export KUBECONFIG=\$HOME/.kube/config" >> /etc/profile
   systemctl daemon-reload
   systemctl restart kubelet
 }
@@ -219,10 +279,12 @@ check_args(){
       exit 0
       ;;
     master)
+      init_env
       K8S_LOCAL_NODE="$1"
       IP_ADDR_CURRENT=$IP_ADDR_MASTER
       ;;
     node)
+      init_env
       # 判断参数个数
       if [ $# -eq 2 ]; then
           if [ "$2" -eq 1 ]; then
@@ -234,7 +296,6 @@ check_args(){
             exit 0
           fi
           K8S_LOCAL_NODE="$1""$2"
-          echo "===>>>node: $K8S_LOCAL_NODE"
       else
         echo "参数错误"
         print_usage
@@ -242,14 +303,16 @@ check_args(){
       fi
       ;;
   esac
+  echo "当前节点名称：     $K8S_LOCAL_NODE"
+  echo "当前节点地址：     $IP_ADDR_CURRENT"
 }
 
 main(){
   # 关闭虚拟内存
   check_root
   check_args "$@"
-  init_env
   swapoff -a
+  set_hostname
   set_hosts
   preinstall_debs
   set_static_network
