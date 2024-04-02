@@ -56,9 +56,9 @@ init_env(){
 
 set_hosts(){
 host_file=/etc/hosts
-sed -i '/^master/d' "$host_file"
-sed -i '/^node1/d' "$host_file"
-sed -i '/^node2/d' "$host_file"
+sed -i '/master$/d' "$host_file"
+sed -i '/node1$/d' "$host_file"
+sed -i '/node2$/d' "$host_file"
 hosts=("127.0.1.1 $K8S_LOCAL_NODE" "$IP_ADDR_MASTER master" "$IP_ADDR_NODE1 node1" "$IP_ADDR_NODE2 node2")
 for item in "${hosts[@]}"; do
     # 检查是否已经存在相同的记录
@@ -136,6 +136,12 @@ EOF
   systemctl enable docker
   systemctl restart cri-docker.service
   echo "安装前置软件包，docker安装部署... 完成"
+}
+
+do_swapoff() {
+  swapoff -a
+  # 永久关闭swapoff
+  sed -i '/swap/{/^#/!s/^/#/}' /etc/fstab
 }
 
 set_static_network(){
@@ -221,7 +227,7 @@ init_k8s(){
   sed -i "s/advertiseAddress:.*$/advertiseAddress: $IP_ADDR_MASTER/" kubeadm.conf
   # 替换 bindPort 的值
   sed -i 's/bindPort:.*$/bindPort: 6443/' kubeadm.conf
-  sed -i 's/name: node/name: $K8S_LOCAL_NODE/' kubeadm.conf
+  sed -i "s/name: node$/name: $K8S_LOCAL_NODE/" kubeadm.conf
   kubeadm config images list --config kubeadm.conf
   echo "生成初始化配置... 完成"
   kubeadm config images pull --config kubeadm.conf
@@ -265,6 +271,11 @@ config_k8s(){
   cp -i /etc/kubernetes/admin.conf "$USER_HOME_DIR"/.kube/config
   chown "$(id -u "$USER_NAME")":"$(id -g "$USER_NAME")" "$USER_HOME_DIR"/.kube/config
   echo "export KUBECONFIG=\$HOME/.kube/config" >> /etc/profile
+
+  if ! grep -q "export KUBECONFIG=\$HOME/.kube/config" /etc/profile; then
+          # 追加内容到 /etc/hosts 文件
+          echo "export KUBECONFIG=\$HOME/.kube/config" >> /etc/profile
+  fi
   systemctl daemon-reload
   systemctl restart kubelet
 }
@@ -291,7 +302,7 @@ check_args(){
           if [ "$2" -eq 1 ]; then
             IP_ADDR_CURRENT=$IP_ADDR_NODE1
           elif [ "$2" -eq 2 ]; then
-            IP_ADDR_CURRENT=$IP_ADDR_NODE1
+            IP_ADDR_CURRENT=$IP_ADDR_NODE2
           else
             echo "id not found: $1"
             exit 0
@@ -312,7 +323,7 @@ main(){
   # 关闭虚拟内存
   check_root
   check_args "$@"
-  swapoff -a
+  do_swapoff
   set_hostname
   set_hosts
   preinstall_debs
