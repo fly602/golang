@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# 通过scp将脚本上传到各个服务器
+# sshpass -p "密码" scp -o StrictHostKeyChecking=no run.sh 用户@ip地址:~/
+# 重置环境：sudo ./run.sh reset
+# 配置主节点：sudo ./run.sh master
+# 配置子节点：sudo ./run.sh node 1
+
 #set -x
 # 默认参数值
 IP_ADDR_MASTER="192.168.3.180"
@@ -64,7 +70,7 @@ for item in "${hosts[@]}"; do
     # 检查是否已经存在相同的记录
     if ! grep -q "$item" "$host_file"; then
         # 追加内容到 /etc/hosts 文件
-        echo "$item" | sudo tee -a "$host_file"
+        echo "$item" | tee -a "$host_file"
     fi
 done
 echo "设置hosts... 完成"
@@ -109,7 +115,7 @@ EOF
 preinstall_debs(){
   apt update
   # 安装前置软件包
-  apt install -y ssh sudo docker docker-compose curl gnupg zssh wget
+  apt install -y ssh sudo docker docker-compose curl gnupg zssh wget sshpass
   # 启动ssh
   systemctl enable  ssh && systemctl start ssh
 
@@ -135,7 +141,12 @@ EOF
   systemctl restart docker
   systemctl enable docker
   systemctl restart cri-docker.service
-  echo "安装前置软件包，docker安装部署... 完成"
+
+  config_k8s_source
+  # 安装k8s
+  apt-get install -y kubelet kubernetes-cni kubeadm kubectl
+  kubeadm version
+  echo "安装前置软件包，docker、k8s安装... 完成"
 }
 
 do_swapoff() {
@@ -204,7 +215,7 @@ install_k8s(){
   # 安装k8s
   apt-get install -y kubelet kubernetes-cni kubeadm kubectl
   kubeadm version
-  echo "k8s安装部署... 完成"
+  echo "k8s安装... 完成"
 }
 
 install_fannel(){
@@ -233,6 +244,18 @@ init_k8s(){
   kubeadm config images pull --config kubeadm.conf
   kubeadm certs renew all --config=kubeadm.conf
   kubeadm init --config kubeadm.conf
+
+  # 检查是否成功执行 kubeadm init
+  COMMAND_FILE=kubeadm_join_command.sh
+  if [ $? -eq 0 ]; then
+      # 提取 join 命令并保存到文件
+      echo "#!/bin/bash" > $COMMAND_FILE
+      echo "$(kubeadm token create --print-join-command) --cri-socket unix:///var/run/cri-dockerd.sock" >> $COMMAND_FILE
+      cat $COMMAND_FILE
+  else
+      echo "Failed to initialize Kubernetes cluster."
+  fi
+  cd .. || exit 0
   echo "k8s环境初始化... 完成"
 }
 
@@ -329,7 +352,6 @@ main(){
   preinstall_debs
   set_static_network
   set_kernel_ipv4
-  install_k8s
   if [ "$K8S_LOCAL_NODE" == "master" ];then
   init_k8s
   config_k8s
